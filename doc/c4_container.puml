@@ -1,0 +1,65 @@
+@startuml
+!include <C4/C4_Container.puml>
+!include <C4/C4_Component.puml>
+
+!define ICONURL https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/v2.4.0
+!includeurl ICONURL/common.puml
+!includeurl ICONURL/devicons/go.puml
+!includeurl ICONURL/devicons2/postgresql.puml
+
+!include <cloudinsight/kafka>
+
+' !includeurl https://github.com/tupadr3/plantuml-icon-font-sprites/tree/master/devicons/go.puml
+' !define DEVICONS https://github.com/tupadr3/plantuml-icon-font-sprites/tree/master/devicons
+' !define DEVIONS2 https://github.com/tupadr3/plantuml-icon-font-sprites/tree/master/devicons2
+
+' Styles
+skinparam componentStyle uml2
+skinparam component {
+    BackgroundColor WHITE
+    BorderColor BLACK
+    ArrowColor BLACK
+}
+
+' Actors
+Person(user, "User", "A user of the system")
+Person(manager, "Manager", "A manager of the system")
+
+' Systems
+System(adminService, "Admin Service", "Part of the system that allows managers to manage features")
+System(mainService, "Main Service", "Responsible for client API, user registration, and authentication")
+
+' Containers
+' Container(mainService, "Main Service", "Responsible for client API, user registration, and authentication")
+
+Container(mainApi, "Main API", "Exposes REST API for the frontend", "Redirect target methods to special APIs, like proxy layer", "go")
+Container(adminApi, "Admin API", "Exposes REST API for the frontend", "Methods for control and manage of users", "go")
+Container(authenticationApi, "Authentication API", "Handles user authentication", "Methods to log in and sign in new consumer", "go")
+Container(statisticsApi, "Statistics API", "Exposes gRPC API for other services", "Methods to get statistics about recent posts such as likes and comments", "go")
+Container(postApi, "Post API", "Exposes gRPC API for other services", "Methods to share a post or comment", "go")
+
+ContainerDb(databaseUser, "Database PostgreSQL", "Stores user data", "Structure of data", "postgresql")
+ContainerDb(databasePostsComments, "Database PostgreSQL", "Stores posts and comments", "Structure of data", "postgresql")
+ContainerDb(clickhouseStat, "ClickHouse", "Stores statistics data", <<ClickHouse>>)
+
+ContainerQueue(kfkMoment, "target_kafka", "Queue of requests", "Structure of users requests", "kafka")
+
+' Relationships
+Rel(manager, adminService, "Manage posts, users, and additional features", "REST API")
+Rel(adminService, adminApi, "Manage posts, users, and additional features")
+Rel(user, mainService, "Any type of user requests", "REST API")
+Rel(mainService, mainApi, "Any type of user requests")
+Rel(adminApi, mainApi, "Apply changes from admin", "gRPC")
+
+Rel(mainApi, authenticationApi, "Request to authentication or registration", "gRPC")
+Rel(authenticationApi, databaseUser, "Save user profile data")
+
+Rel(mainApi, kfkMoment, "Message Broker", "gRPC")
+Rel(kfkMoment, statisticsApi, "Request to get the statistics about personal posts(likes, comments)", "gRPC")
+Rel(statisticsApi, clickhouseStat, "Save statistics about likes and comments")
+
+Rel(mainApi, postApi, "Request to post something or leave a comment)", "gRPC")
+Rel(postApi, databasePostsComments, "Save data about posts and comments")
+
+@enduml
+
