@@ -1,23 +1,20 @@
 @startuml
 !include <C4/C4_Context.puml>
 
-Person(user, "Пользователь", "A user of the system")
-Person(manager, "Менеджер", "A manager of the system")
+Person(user, "User", "A user of the system")
 
-System(admin, "Admin Access", "Part of the system that allows managers to manage features")
 System(socialNetwork, "Social Network", "A system that allows users to create and share posts, and interact with other users")
 System(statistics, "Statistics Service", "A service that calculates and stores statistics for posts and users")
 System(post, "Post Service", "A service that manages posts and comments")
 
-Rel(manager, admin, "Manage posts, users, and additional features")
-Rel(user, socialNetwork, "Registration, Authentication and getting access to post, like, comment, ...")
+Rel(user, socialNetwork, "Registration, Authentication and getting access to posts, likes, comments, ...")
 
-Rel(user, post, "Creating posts and comments")
-Rel(post, user, "Response with posts and comments")
+Rel(socialNetwork, post, "Creating posts and comments")
+Rel(post, socialNetwork, "Response with posts and comments")
 
-Rel(user, statistics, "Get statistics about the post (likes, views, comments)")
-Rel(statistics, user, "Response with statistics")
+Rel(socialNetwork, statistics, "Get statistics about the post (likes, views, comments)")
+Rel(statistics, socialNetwork, "Response with statistics")
 
-Rel(post, statistics, "Information about statistics of user posts")
+' Rel(post, statistics, "Information about statistics of user posts")
 
 @enduml
