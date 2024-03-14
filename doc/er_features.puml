@@ -1,0 +1,38 @@
+@startuml
+entity "User" as user {
+  * id: int
+  --
+  * username: string
+  email: string
+  password: string
+}
+
+entity "Post" as post {
+  * id: int
+  --
+  * title: string
+  body: string
+  user_id: int
+}
+
+entity "Comment" as comment {
+  * id: int
+  --
+  * body: string
+  user_id: int
+  post_id: int
+}
+
+entity "Statistics" as statistics {
+  * id: int
+  --
+  * post_id: int
+  view_count: int
+  like_count: int
+}
+
+user ||--o{ post
+user ||--o{ comment
+post ||--|{ comment
+post ||--o{ statistics
+@enduml
