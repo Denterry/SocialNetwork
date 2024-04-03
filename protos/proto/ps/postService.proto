@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package postservice;
+
+option go_package = "./proto";
+
+service PostService {
+    rpc CreatePost(CreatePostRequest) returns (CreatePostResponse);
+    rpc UpdatePost(UpdatePostRequest) returns (UpdatePostResponse);
+    rpc DeletePost(DeletePostRequest) returns (DeletePostResponse);
+    rpc GetPostById(GetPostByIdRequest) returns (GetPostByIdResponse);
+    rpc GetPosts(GetPostsRequest) returns (GetPostsResponse);
+}
+
+
+// Argument and Return value for CreatePost
+message CreatePostRequest {
+    int64 user_id = 1;
+    string title = 2;
+    string content = 3;
+}
+
+message CreatePostResponse {
+    int64 post_id = 1;
+}
+
+// Argument and Return value for UpdatePost
+message UpdatePostRequest {
+    int64 post_id = 1;
+    string title = 2;
+    string content = 3;
+}
+
+message UpdatePostResponse {}
+
+
+// Argument and Return value for DeletePost
+message DeletePostRequest {
+    int64 post_id = 1;
+}
+
+message DeletePostResponse {}
+
+
+// Argument and Return value for GetPostById
+message GetPostByIdRequest {
+    int64 post_id = 1;
+}
+
+message GetPostByIdResponse {
+    string title = 1;
+    string content = 2;
+}
+
+
+// Argument and Return value for GetPosts
+message GetPostsRequest {
+    int32 page = 1;
+    int32 page_size = 2;
+}
+
+message GetPostsResponse {
+    repeated Post posts = 1;
+
+    message Post {
+        int64 post_id = 1;
+        string title = 2;
+        string content = 3;
+    }
+}
