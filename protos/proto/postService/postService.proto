@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package postservice;
 
-option go_package = "./proto";
+option go_package = "Denterry.ps.v1;psv1";
 
 service PostService {
     rpc CreatePost(CreatePostRequest) returns (CreatePostResponse);
