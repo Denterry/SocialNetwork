@@ -1,10 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"log/slog"
+	"net"
 	"os"
 
 	"github.com/Denterry/SocialNetwork/postService/internal/config"
+	"github.com/Denterry/SocialNetwork/postService/internal/grpc/server"
+	"github.com/Denterry/SocialNetwork/postService/internal/storage"
+	"github.com/Denterry/SocialNetwork/postService/internal/storage/postgres"
+	"github.com/Denterry/SocialNetwork/postService/pkg/post_v1"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -13,20 +20,35 @@ const (
 	envProd  = "prod"
 )
 
+// разобраться с подключаением к бд
+// разобраться с обработкой чуваков тех, кто может крадить посты
+// разобраться с докер компоузом
+// разобраться с конфигом
+
 func main() {
 	cfg := config.MustLoad()
-	// fmt.Println(cfg)
+
+	postgres.InitDb()
+	defer postgres.Db.Close()
 
 	log := setupLogger(cfg.Env)
 	log.Info("starting application", slog.Any("config", cfg))
-	// log.Info("starting application",
-	// 	slog.String("env", cfg.Env),
-	// 	slog.Any("cfg", cfg),
-	// 	slog.Int("port", cfg.GRPC.Port),
-	// )
-	// log.Debug("debug message")
-	// log.Error("error message")
-	// log.Warn("warn message")
+
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", cfg.GRPC.Port))
+	if err != nil {
+		log.Error("Failed to listen: %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+	repo := storage.NewPostRepositoryPg(postgres.Db)
+	postService := server.NewServerAPI(repo)
+
+	post_v1.RegisterPostServiceServer(grpcServer, postService)
+
+	log.Info(fmt.Sprintf("Server is running on localhost:%d", cfg.GRPC.Port))
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Error("Failed to serve: %v", err)
+	}
 }
 
 func setupLogger(env string) *slog.Logger {
@@ -49,28 +71,3 @@ func setupLogger(env string) *slog.Logger {
 
 	return log
 }
-
-// func main() {
-// 	storage.InitDb()
-// 	defer storage.Db.Close()
-
-// 	lis, err := net.Listen("tcp", ":5005")
-// 	if err != nil {
-// 		log.Fatalf("Failed to listen: %v", err)
-// 	}
-
-// 	grpcServer := grpc.NewServer()
-// 	srv := &postdealer.GRPCServer{}
-// 	proto.RegisterPostServiceServer(grpcServer, srv)
-
-// 	postRepository := repository.NewPostRepository()
-// 	postService := service.NewPostService(postRepository)
-// 	postHandler := handler.NewPostHandler(postService)
-
-// 	pb.RegisterPostServiceServer(grpcServer, postHandler)
-
-// 	log.Println("gRPC server is running...")
-// 	if err := grpcServer.Serve(lis); err != nil {
-// 		log.Fatalf("Failed to serve: %v", err)
-// 	}
-// }
