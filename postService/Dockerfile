@@ -32,6 +32,7 @@ COPY --from=builder /app/post-service /usr/local/bin/post-service
 
 # Expose the port on which the service will run
 EXPOSE 50051
+EXPOSE 8088
 
 # Command to run the service
 CMD ["post-service"]
