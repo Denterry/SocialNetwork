@@ -1,0 +1,1 @@
+The microservice which handles user's requests to create a post, a comment and e.t.c.

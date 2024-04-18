@@ -1,0 +1,6 @@
+env: "local" # dev, prod
+storage_path: "./internal/storage/postservice.db"
+token_ttl: 1h
+grpc:
+  port: 8089
+  timeout: 10h
