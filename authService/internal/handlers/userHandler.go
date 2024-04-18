@@ -84,28 +84,3 @@ func LoginUser(g *gin.Context) {
 
 	// g.JSON(http.StatusOK, gin.H{"message": "Login successful", "user_id": id})
 }
-
-// TODO: Create a post
-func CreatePost(g *gin.Context) {
-
-}
-
-// TODO: Update a post
-func UpdatePost(g *gin.Context) {
-
-}
-
-// TODO: Delete a post
-func DeletePost(g *gin.Context) {
-
-}
-
-// TODO: Get a post
-func GetPost(g *gin.Context) {
-
-}
-
-// TODO: Get a list of posts
-func GetListPosts(g *gin.Context) {
-
-}
