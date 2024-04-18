@@ -1,6 +1,5 @@
 FROM golang:1.22-alpine AS builder
 
-
 # Set the current working directory inside the container
 WORKDIR /app
 
@@ -15,7 +14,7 @@ RUN go mod download
 COPY . .
 
 # Build the Go application
-RUN go build -o post-service ./cmd
+RUN go build -o post-service ./cmd/postService
 
 # Use a smaller base image for the final container
 FROM alpine:latest

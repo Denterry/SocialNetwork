@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"auth/internal/storage"
-	"auth/pkg/models"
 	"fmt"
 	"net/http"
 
+	"github.com/Denterry/SocialNetwork/authService/domain/models"
+	"github.com/Denterry/SocialNetwork/authService/internal/storage"
 	"github.com/gin-gonic/gin"
 )
 
@@ -47,7 +47,7 @@ func UpdateUser(g *gin.Context) {
 	g.JSON(http.StatusOK, gin.H{"message": "User updated successfully"})
 }
 
-// Log in a user via username and password
+// Login a user via username and password
 func LoginUser(g *gin.Context) {
 	var logUser models.LogSignIn
 	if err := g.BindJSON(&logUser); err != nil {
@@ -83,4 +83,29 @@ func LoginUser(g *gin.Context) {
 	// }
 
 	// g.JSON(http.StatusOK, gin.H{"message": "Login successful", "user_id": id})
+}
+
+// TODO: Create a post
+func CreatePost(g *gin.Context) {
+
+}
+
+// TODO: Update a post
+func UpdatePost(g *gin.Context) {
+
+}
+
+// TODO: Delete a post
+func DeletePost(g *gin.Context) {
+
+}
+
+// TODO: Get a post
+func GetPost(g *gin.Context) {
+
+}
+
+// TODO: Get a list of posts
+func GetListPosts(g *gin.Context) {
+
 }
