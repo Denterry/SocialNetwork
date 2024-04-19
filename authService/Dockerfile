@@ -15,26 +15,24 @@ RUN go mod download
 COPY . .
 
 # # Build the Go application
-RUN go build -o main ./cmd
+RUN go build -o auth-service ./cmd/authService
 
 # Use a smaller base image for the final container
 FROM alpine:latest
-
-# Set environment variables from .env file
-COPY .env .env
 
 # Set environment variables for database connection
 ENV DB_HOST=localhost
 ENV DB_PORT=5432
 ENV DB_USER=todorov_want
-ENV DB_PASSWORD=postgres
+ENV DB_PASSWORD=pass
 ENV DB_NAME=auth
 
 # Copy the built executable from the builder stage to the final image
-COPY --from=builder /app/main /usr/local/bin/main
+COPY --from=builder /app/auth-service /usr/local/bin/auth-service
+COPY --from=builder /app/.env /.env
 
 # Expose the port on which the service will run
 EXPOSE 8080
 
 # Command to run the service
-CMD ["main"]
+CMD ["auth-service"]

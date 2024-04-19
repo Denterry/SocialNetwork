@@ -30,8 +30,8 @@ ENV DB_NAME=postserv
 COPY --from=builder /app/post-service /usr/local/bin/post-service
 
 # Expose the port on which the service will run
-EXPOSE 50051
-EXPOSE 8088
+EXPOSE 50052
+EXPOSE 8081
 
 # Command to run the service
 CMD ["post-service"]

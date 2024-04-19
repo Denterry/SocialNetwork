@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  auth-db:
+    image: postgres:latest
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: todorov_want
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: auth
+    ports:
+      - "5433:5432"
+    env_file:
+      - .env
+
+  authService:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgres://user:password@auth-db:5432/auth
+    depends_on:
+      - auth-db
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+
+  # auth-migration:
+  #   image: migrate/migrate
+  #   depends_on:
+  #     - auth-db
+  #   volumes:
+  #     - ./authService/migrations:/migrations
+  #   command: ["-path", "/migrations", "-database", "postgres://user:password@auth-db:5432/authdb?sslmode=disable", "up"]
+  #   restart: on-failure
+
+volumes:
+  auth-db-data:

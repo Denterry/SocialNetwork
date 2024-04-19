@@ -11,7 +11,6 @@ import (
 
 // Register a new user
 func RegisterUser(g *gin.Context) {
-	fmt.Println("dasdasdasdas")
 	var regUser models.LogSignIn
 	if err := g.ShouldBindJSON(&regUser); err != nil {
 		g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -68,19 +67,4 @@ func LoginUser(g *gin.Context) {
 	}
 
 	g.JSON(http.StatusOK, gin.H{"message": "User authenticated successfully"})
-
-	// var logUser models.LogSignIn
-	// if err := g.ShouldBindJSON(&logUser); err != nil {
-	// 	g.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-	// 	return
-	// }
-
-	// row := storage.Db.QueryRow("SELECT id FROM users WHERE username=$1 AND password=$2", logUser.Username, logUser.Password)
-	// var id int
-	// if err := row.Scan(&id); err != nil {
-	// 	g.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
-	// 	return
-	// }
-
-	// g.JSON(http.StatusOK, gin.H{"message": "Login successful", "user_id": id})
 }

@@ -1,24 +1,78 @@
 version: '3.8'
-
 services:
-  db:
-    image: postgres
-    restart: always
-
-    ports:
-      - "5432:5432"
+  auth-db:
+    image: postgres:latest
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - auth-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: todorov_want
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: auth
+    ports:
+      - "5433:5432"
 
-  user-service:
+  post-db:
+    image: postgres:latest
+    volumes:
+      - post-db-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: todorov_want
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: post
+    ports:
+      - "5434:5432"
+
+  authService:
     build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
+      context: ./authService
+      dockerfile: ./authService/Dockerfile
     ports:
       - "8080:8080"
+    environment:
+      - DB_CONNECTION_STRING=postgres://user:password@db:5432/auth
     depends_on:
-      - db
+      - auth-db
+
+  postService:
+    build:
+      context: ./postService
+      dockerfile: ./postService/Dockerfile
+    ports:
+      - "50052:50052"
+      - "8081:8081"
+    environment:
+      - DB_CONNECTION_STRING=postgres://user:password@db:5432/post
+    depends_on:
+      - post-db
+
+  # db:
+  #   image: postgres:latest
+  #   environment:
+  #     POSTGRES_USER: user
+  #     POSTGRES_PASSWORD: password
+  #   ports:
+  #     - "5432:5432"
+  #   volumes:
+  #     - db-data:/var/lib/postgresql/data
+  
+  # auth-migration:
+  #   image: migrate/migrate
+  #   depends_on:
+  #     - auth-db
+  #   volumes:
+  #     - ./authService/migrations:/migrations
+  #   command: ["-path", "/migrations", "-database", "postgres://authuser:authpass@auth-db:5432/authdb?sslmode=disable", "up"]
+  #   restart: on-failure
+
+  # post-migration:
+  #   image: migrate/migrate
+  #   depends_on:
+  #     - post-db
+  #   volumes:
+  #     - ./postService/migrations:/migrations
+  #   command: ["-path", "/migrations", "-database", "postgres://postuser:postpass@post-db:5432/postdb?sslmode=disable", "up"]
+  #   restart: on-failure
 
 volumes:
-  db-data:
+  auth-db-data:
+  post-db-data:
