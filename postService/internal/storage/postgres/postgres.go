@@ -4,37 +4,16 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
-	"os"
-	"strconv"
 
-	"github.com/joho/godotenv"
+	"github.com/Denterry/SocialNetwork/postService/internal/config"
 	_ "github.com/lib/pq"
 )
 
-var (
-	Db *sql.DB
-)
-
 // Initialization of PostgreSQL Database
-func InitDb() {
-	err := godotenv.Load("./config/.env")
-	if err != nil {
-		fmt.Println("Error is occurred  on .env file, please recheck!")
-		log.Fatal(err)
-	}
+func InitDb(dbConfig *config.Config) (*sql.DB, error) {
+	dsn := fmt.Sprintf("host=%v user=%v password=%v dbname=%v port=%v sslmode=disable", dbConfig.Storage.Host, dbConfig.Storage.User, dbConfig.Storage.Password, dbConfig.Storage.Name, dbConfig.Storage.Port)
 
-	// Read .env file
-	host := os.Getenv("HOST")
-	port, _ := strconv.Atoi(os.Getenv("PORT"))
-	user := os.Getenv("USER")
-	pass := os.Getenv("PASSWORD")
-	dbname := os.Getenv("DB_NAME")
-
-	// Set up postgres sql to open it
-	psqlSetup := fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s sslmode=disable",
-		host, port, user, dbname, pass)
-
-	Db, err = sql.Open("postgres", psqlSetup)
+	Db, err := sql.Open("postgres", dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -45,18 +24,5 @@ func InitDb() {
 
 	log.Println("Connected to Database!")
 
-	// Set up tables in database
-	_, err = Db.Exec(`CREATE TABLE IF NOT EXISTS account (
-						user_id serial PRIMARY KEY,
-						username VARCHAR(50) UNIQUE NOT NULL,
-						password VARCHAR(50) NOT NULL,
-						name VARCHAR(50),
-						surname VARCHAR(50),
-						birthday DATE,
-						email VARCHAR(255),
-						phone VARCHAR(20))`)
-	if err != nil {
-		fmt.Println("Couldn't create an account table, recheck you request!")
-		log.Fatal(err)
-	}
+	return Db, nil
 }

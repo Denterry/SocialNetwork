@@ -22,16 +22,16 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PostServiceClient interface {
-	// Creates a new post/task
+	// Creates a new post
 	CreatePost(ctx context.Context, in *CreatePostRequest, opts ...grpc.CallOption) (*PostResponse, error)
-	// Updates an existing post/task
+	// Updates an existing post
 	UpdatePost(ctx context.Context, in *UpdatePostRequest, opts ...grpc.CallOption) (*PostResponse, error)
-	// Deletes a specific post/task
+	// Deletes a specific post
 	DeletePost(ctx context.Context, in *DeletePostRequest, opts ...grpc.CallOption) (*PostResponse, error)
-	// Retrieves a specific post/task by ID
+	// Retrieves a specific post by ID
 	GetPostById(ctx context.Context, in *GetPostByIdRequest, opts ...grpc.CallOption) (*PostResponse, error)
-	// Lists posts/tasks with pagination
-	ListPosts(ctx context.Context, in *ListPostsRequest, opts ...grpc.CallOption) (*ListPostsResponse, error)
+	// Lists posts with pagination
+	GetListPosts(ctx context.Context, in *GetListPostsRequest, opts ...grpc.CallOption) (*GetListPostsResponse, error)
 }
 
 type postServiceClient struct {
@@ -78,9 +78,9 @@ func (c *postServiceClient) GetPostById(ctx context.Context, in *GetPostByIdRequ
 	return out, nil
 }
 
-func (c *postServiceClient) ListPosts(ctx context.Context, in *ListPostsRequest, opts ...grpc.CallOption) (*ListPostsResponse, error) {
-	out := new(ListPostsResponse)
-	err := c.cc.Invoke(ctx, "/post_v1.PostService/ListPosts", in, out, opts...)
+func (c *postServiceClient) GetListPosts(ctx context.Context, in *GetListPostsRequest, opts ...grpc.CallOption) (*GetListPostsResponse, error) {
+	out := new(GetListPostsResponse)
+	err := c.cc.Invoke(ctx, "/post_v1.PostService/GetListPosts", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -91,16 +91,16 @@ func (c *postServiceClient) ListPosts(ctx context.Context, in *ListPostsRequest,
 // All implementations must embed UnimplementedPostServiceServer
 // for forward compatibility
 type PostServiceServer interface {
-	// Creates a new post/task
+	// Creates a new post
 	CreatePost(context.Context, *CreatePostRequest) (*PostResponse, error)
-	// Updates an existing post/task
+	// Updates an existing post
 	UpdatePost(context.Context, *UpdatePostRequest) (*PostResponse, error)
-	// Deletes a specific post/task
+	// Deletes a specific post
 	DeletePost(context.Context, *DeletePostRequest) (*PostResponse, error)
-	// Retrieves a specific post/task by ID
+	// Retrieves a specific post by ID
 	GetPostById(context.Context, *GetPostByIdRequest) (*PostResponse, error)
-	// Lists posts/tasks with pagination
-	ListPosts(context.Context, *ListPostsRequest) (*ListPostsResponse, error)
+	// Lists posts with pagination
+	GetListPosts(context.Context, *GetListPostsRequest) (*GetListPostsResponse, error)
 	mustEmbedUnimplementedPostServiceServer()
 }
 
@@ -120,8 +120,8 @@ func (UnimplementedPostServiceServer) DeletePost(context.Context, *DeletePostReq
 func (UnimplementedPostServiceServer) GetPostById(context.Context, *GetPostByIdRequest) (*PostResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetPostById not implemented")
 }
-func (UnimplementedPostServiceServer) ListPosts(context.Context, *ListPostsRequest) (*ListPostsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListPosts not implemented")
+func (UnimplementedPostServiceServer) GetListPosts(context.Context, *GetListPostsRequest) (*GetListPostsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetListPosts not implemented")
 }
 func (UnimplementedPostServiceServer) mustEmbedUnimplementedPostServiceServer() {}
 
@@ -208,20 +208,20 @@ func _PostService_GetPostById_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PostService_ListPosts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListPostsRequest)
+func _PostService_GetListPosts_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetListPostsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PostServiceServer).ListPosts(ctx, in)
+		return srv.(PostServiceServer).GetListPosts(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/post_v1.PostService/ListPosts",
+		FullMethod: "/post_v1.PostService/GetListPosts",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PostServiceServer).ListPosts(ctx, req.(*ListPostsRequest))
+		return srv.(PostServiceServer).GetListPosts(ctx, req.(*GetListPostsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -250,8 +250,8 @@ var PostService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _PostService_GetPostById_Handler,
 		},
 		{
-			MethodName: "ListPosts",
-			Handler:    _PostService_ListPosts_Handler,
+			MethodName: "GetListPosts",
+			Handler:    _PostService_GetListPosts_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -1,40 +1,103 @@
 version: '3.8'
 
 services:
-  auth-db:
-    image: postgres:latest
-    volumes:
-      - auth-db-data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_USER: todorov_want
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: auth
-    ports:
-      - "5433:5432"
-    env_file:
-      - .env
-
-  authService:
+  postgres-db:
     build:
-      context: ./
-      dockerfile: Dockerfile
-    environment:
-      DATABASE_URL: postgres://user:password@auth-db:5432/auth
-    depends_on:
-      - auth-db
+      context: .
+      dockerfile: auth.postgres.Dockerfile
+    volumes:
+      - ./data/db-7:/var/lib/postgresql/data:delegated
     ports:
-      - "8080:8080"
+      - 7557:5432
+    environment:
+      - POSTGRES_USER=authinitializer
+      - POSTGRES_PASSWORD=qwerty123456
+      - PGDATA=/pgdata
+      - POSTGRES_DB=auth_db
+
+  auth-db-postgres:
+    image: postgres:local
+    hostname: database
+    build:
+      context: .
+      dockerfile: auth.postgres.Dockerfile
+    restart: always
+    env_file: ./config/database.env
+    volumes:
+      - ./data/db-7:/var/lib/postgresql/data:delegated
+    ports:
+      - 5442:5432
+
+  # auth-db-migration: -
+
+  auth:
+    image: auth:${TAG}
+    hostname: auth
+    restart: always
+    build:
+      context: .
+      dockerfile: auth.Dockerfile
+    ports:
+      - 8090:8080
     env_file:
-      - .env
+      - ./config/database.env
+    environment:
+      - SERVICE_LOGS_DIR=/authinitializer/logs
+      - DB_HOST=database
+    volumes:
+      - ./:/authinitializer/
+      - ./logs/backend:/authinitializer/logs
+    depends_on:
+      auth-db-postgres:
+        condition: service_healthy
+      # auth-db-migration:
+      #   condition: service_healthy
 
-  # auth-migration:
-  #   image: migrate/migrate
-  #   depends_on:
-  #     - auth-db
-  #   volumes:
-  #     - ./authService/migrations:/migrations
-  #   command: ["-path", "/migrations", "-database", "postgres://user:password@auth-db:5432/authdb?sslmode=disable", "up"]
-  #   restart: on-failure
+# volumes:
+#   nginx_logs:
+#   backend_logs:
 
-volumes:
-  auth-db-data:
+
+# services:
+#   auth-db-postgres:
+#     image: postgres:local
+#     depends_on:
+#       - auth-db-data
+#     volumes:
+#       - ${YOUR_ORG_INSTALL_PATH}/volumes/services/postgres-data:/var/lib/postgresql/data:delegated
+#     environment:
+#       POSTGRES_USER: postgres
+#       POSTGRES_PASSWORD: auth
+#       POSTGRES_DB: auth_db
+#     ports:
+#       - "5433:5432"
+#     env_file:
+#       - .env
+
+#   auth-db-migration:
+#     image: migrate/migrate
+#     depends_on:
+#       - auth-db
+#     volumes:
+#       - ./authService/migrations:/migrations
+#     command: ["-path", "/migrations", "-database", "postgres://user:password@auth-db:5432/authdb?sslmode=disable", "up"]
+#     restart: on-failure
+  
+#   authService:
+#     build:
+#       context: ./
+#       dockerfile: Dockerfile
+#     environment:
+#       DATABASE_URL: postgres://user:password@auth-db:5432/auth
+#     depends_on:
+#       - auth-db-postgres
+#       - auth-db-migration
+#     ports:
+#       - "8080:8080"
+#     env_file:
+#       - .env
+
+# volumes:
+#   auth-db-data:
+#     environment:
+#       YOUR_ORG_INSTALL_PATH: 

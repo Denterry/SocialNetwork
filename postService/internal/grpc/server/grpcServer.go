@@ -16,20 +16,20 @@ type PostRepository interface {
 	UpdatePost(ctx context.Context, post models.Post) (*models.Post, error)
 	DeletePost(ctx context.Context, id int64) error
 	GetPostById(ctx context.Context, id int64) (*models.Post, error)
-	ListPosts(ctx context.Context, page, pageSize int) ([]*models.Post, error)
+	GetListPosts(ctx context.Context, page, pageSize int) ([]*models.Post, error)
 	GetAuthorByPostId(ctx context.Context, postID int64) (int64, error)
 }
 
-type ServerAPI struct {
+type serverAPI struct {
 	post_v1.UnimplementedPostServiceServer
 	repo PostRepository
 }
 
-func NewServerAPI(repo PostRepository) *ServerAPI {
-	return &ServerAPI{repo: repo}
+func NewServerAPI(repo PostRepository) *serverAPI {
+	return &serverAPI{repo: repo}
 }
 
-func (sapi *ServerAPI) CreatePost(ctx context.Context, request *post_v1.CreatePostRequest) (*post_v1.PostResponse, error) {
+func (sapi *serverAPI) CreatePost(ctx context.Context, request *post_v1.CreatePostRequest) (*post_v1.PostResponse, error) {
 	if request.GetAuthorId() == 0 {
 		return nil, status.Error(codes.InvalidArgument, "Author Id must be specified")
 	}
@@ -63,7 +63,7 @@ func (sapi *ServerAPI) CreatePost(ctx context.Context, request *post_v1.CreatePo
 	}, nil
 }
 
-func (sapi *ServerAPI) UpdatePost(ctx context.Context, request *post_v1.UpdatePostRequest) (*post_v1.PostResponse, error) {
+func (sapi *serverAPI) UpdatePost(ctx context.Context, request *post_v1.UpdatePostRequest) (*post_v1.PostResponse, error) {
 	if request.GetPostId() == 0 {
 		return nil, status.Error(codes.InvalidArgument, "Post Id must be specified")
 	}
@@ -106,7 +106,7 @@ func (sapi *ServerAPI) UpdatePost(ctx context.Context, request *post_v1.UpdatePo
 	}, nil
 }
 
-func (sapi *ServerAPI) DeletePost(ctx context.Context, request *post_v1.DeletePostRequest) (*post_v1.PostResponse, error) {
+func (sapi *serverAPI) DeletePost(ctx context.Context, request *post_v1.DeletePostRequest) (*post_v1.PostResponse, error) {
 	if request.GetPostId() == 0 {
 		return nil, status.Error(codes.InvalidArgument, "Post Id must be specified")
 	}
@@ -129,7 +129,7 @@ func (sapi *ServerAPI) DeletePost(ctx context.Context, request *post_v1.DeletePo
 	return &post_v1.PostResponse{}, nil
 }
 
-func (sapi *ServerAPI) GetPostById(ctx context.Context, request *post_v1.GetPostByIdRequest) (*post_v1.PostResponse, error) {
+func (sapi *serverAPI) GetPostById(ctx context.Context, request *post_v1.GetPostByIdRequest) (*post_v1.PostResponse, error) {
 	if request.GetPostId() == 0 {
 		return nil, status.Error(codes.InvalidArgument, "Post Id must be specified")
 	}
@@ -157,7 +157,7 @@ func (sapi *ServerAPI) GetPostById(ctx context.Context, request *post_v1.GetPost
 	}, nil
 }
 
-func (sapi *ServerAPI) ListPosts(ctx context.Context, request *post_v1.ListPostsRequest) (*post_v1.ListPostsResponse, error) {
+func (sapi *serverAPI) GetListPosts(ctx context.Context, request *post_v1.GetListPostsRequest) (*post_v1.GetListPostsResponse, error) {
 	if request.GetPage() == 0 {
 		return nil, status.Error(codes.InvalidArgument, "Page must be specified")
 	}
@@ -166,7 +166,7 @@ func (sapi *ServerAPI) ListPosts(ctx context.Context, request *post_v1.ListPosts
 		return nil, status.Error(codes.InvalidArgument, "Page Size must be specified")
 	}
 
-	res, err := sapi.repo.ListPosts(ctx, int(request.GetPage()), int(request.GetPageSize()))
+	res, err := sapi.repo.GetListPosts(ctx, int(request.GetPage()), int(request.GetPageSize()))
 	if err != nil {
 		return nil, err
 	}
@@ -183,7 +183,7 @@ func (sapi *ServerAPI) ListPosts(ctx context.Context, request *post_v1.ListPosts
 	}
 
 	fmt.Print("The post list was goten successfully!")
-	return &post_v1.ListPostsResponse{
+	return &post_v1.GetListPostsResponse{
 		Posts:    postResponses,
 		NextPage: request.GetPage() + 1,
 	}, nil

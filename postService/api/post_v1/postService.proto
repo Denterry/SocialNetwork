@@ -4,32 +4,31 @@ package post_v1;
 
 option go_package = "github.com/Denterry/SocialNetwork/postService/pkg/post_v1;post_v1";
 
-// The Post service provides operations on posts/tasks.
+// The Post service provides operations on posts.
 service PostService {
-    // Creates a new post/task
+    // Creates a new post
     rpc CreatePost(CreatePostRequest) returns (PostResponse);
-    // Updates an existing post/task
+    // Updates an existing post
     rpc UpdatePost(UpdatePostRequest) returns (PostResponse);
-    // Deletes a specific post/task
+    // Deletes a specific post
     rpc DeletePost(DeletePostRequest) returns (PostResponse);
-    // Retrieves a specific post/task by ID
+    // Retrieves a specific post by ID
     rpc GetPostById(GetPostByIdRequest) returns (PostResponse);
-    // Lists posts/tasks with pagination
-    rpc ListPosts(ListPostsRequest) returns (ListPostsResponse);
+    // Lists posts with pagination
+    rpc GetListPosts(GetListPostsRequest) returns (GetListPostsResponse);
 }
 
-
 message CreatePostRequest {
-    int64 authorId = 1;
-    string title = 2;
-    string content = 3;
+    string title = 1;
+    string content = 2;
+    int64 authorId = 3;
 }
 
 message UpdatePostRequest {
     int64 postId = 1;
-    int64 authorId = 2;
-    string title = 3;
-    string content = 4;
+    string title = 2;
+    string content = 3;
+    int64 authorId = 4;
 }
 
 message DeletePostRequest {
@@ -42,6 +41,12 @@ message GetPostByIdRequest {
     int64 authorId = 2;
 }
 
+message GetListPostsRequest {
+    int32 page = 1;
+    int32 pageSize = 2;
+    int64 authorId = 3;
+}
+
 message PostResponse {
     int64 postId = 1;
     string title = 2;
@@ -49,13 +54,7 @@ message PostResponse {
     int64 authorId = 4;
 }
 
-message ListPostsRequest {
-    int32 page = 1;
-    int32 pageSize = 2;
-    int64 authorId = 3;
-}
-
-message ListPostsResponse {
+message GetListPostsResponse {
     repeated PostResponse posts = 1;
     int32 nextPage = 2;
 }

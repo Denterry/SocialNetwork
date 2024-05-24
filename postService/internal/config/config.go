@@ -2,22 +2,34 @@ package config
 
 import (
 	"flag"
+	"log"
 	"os"
 	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	Env         string        `yaml:"env" json:"env" env-default:"local"`
-	StoragePath string        `yaml:"storage_path" json:"storage_path" env-required:"true"`
-	TokenTTL    time.Duration `yaml:"token_ttl" json:"token_ttl" env-required:"true"`
-	GRPC        GRPCConfig    `yaml:"grpc" json:"grpc"`
+	Env      string        `yaml:"env" env-default:"local"`
+	TokenTTL time.Duration `yaml:"token_ttl" env-required:"true"`
+	GRPC     GRPCConfig    `yaml:"grpc"`
+	Storage  StorageConfig `yaml:"storage"`
 }
 
 type GRPCConfig struct {
-	Port    int           `yaml:"port" json:"port" env-default:"50052"`
-	Timeout time.Duration `yaml:"timeout" json:"timeout"`
+	Host    string        `yaml:"host" env-default:"0.0.0.0"`
+	Port    string        `yaml:"port" env-default:"50052"`
+	Timeout time.Duration `yaml:"timeout"`
+}
+
+type StorageConfig struct {
+	User     string `yaml:"user" env-default:"postgres"`
+	Password string `yaml:"password" env-default:"postgres"`
+	Name     string `yaml:"name" env-default:"post_db"`
+	Host     string `yaml:"host" env-default:"0.0.0.0"`
+	Port     string `yaml:"port" env-default:"5432"`
+	Schema   string `yaml:"schema" env-default:"public"`
 }
 
 func MustLoad() *Config {
@@ -50,6 +62,11 @@ func fetchConfigPath() string {
 	flag.Parse()
 
 	if res == "" {
+		err := godotenv.Load("./config/.env")
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		res = os.Getenv("CONFIG_PATH")
 	}
 
