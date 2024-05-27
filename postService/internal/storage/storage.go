@@ -23,7 +23,7 @@ func NewPostRepositoryPg(db *sql.DB) *postRepositoryPg {
 	return &postRepositoryPg{db: db}
 }
 
-func (pr *postRepositoryPg) GetAuthorByPostId(ctx context.Context, postID int64) (int64, error) {
+func (pr *postRepositoryPg) GetAuthorIdByPostId(ctx context.Context, postID int64) (int64, error) {
 	query := "SELECT author_id FROM post WHERE id=$1"
 	var authorID int64
 	err := pr.db.QueryRowContext(ctx, query, postID).Scan(&authorID)
@@ -83,9 +83,9 @@ func (pr *postRepositoryPg) GetPostById(ctx context.Context, postID int64) (*mod
 	return &post, nil
 }
 
-func (pr *postRepositoryPg) GetListPosts(ctx context.Context, pageNumber, pageSize int) ([]*models.Post, error) {
+func (pr *postRepositoryPg) GetListPosts(ctx context.Context, pageNumber, pageSize, authorID int) ([]*models.Post, error) {
 	var posts []*models.Post
-	query := fmt.Sprintf("SELECT id, author_id, title, content FROM post LIMIT %d OFFSET %d", pageSize, (pageNumber-1)*pageSize)
+	query := fmt.Sprintf("SELECT id, author_id, title, content FROM post WHERE author_id=%d LIMIT %d OFFSET %d", authorID, pageSize, (pageNumber-1)*pageSize)
 	rows, err := pr.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err

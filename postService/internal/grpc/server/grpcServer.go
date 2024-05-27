@@ -16,8 +16,8 @@ type PostRepository interface {
 	UpdatePost(ctx context.Context, post models.Post) (*models.Post, error)
 	DeletePost(ctx context.Context, id int64) error
 	GetPostById(ctx context.Context, id int64) (*models.Post, error)
-	GetListPosts(ctx context.Context, page, pageSize int) ([]*models.Post, error)
-	GetAuthorByPostId(ctx context.Context, postID int64) (int64, error)
+	GetListPosts(ctx context.Context, page, pageSize, authorID int) ([]*models.Post, error)
+	GetAuthorIdByPostId(ctx context.Context, postID int64) (int64, error)
 }
 
 type serverAPI struct {
@@ -76,7 +76,7 @@ func (sapi *serverAPI) UpdatePost(ctx context.Context, request *post_v1.UpdatePo
 		return nil, status.Error(codes.InvalidArgument, "Content must be specified")
 	}
 
-	correctAuthorId, err := sapi.repo.GetAuthorByPostId(ctx, request.GetPostId())
+	correctAuthorId, err := sapi.repo.GetAuthorIdByPostId(ctx, request.GetPostId())
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +111,7 @@ func (sapi *serverAPI) DeletePost(ctx context.Context, request *post_v1.DeletePo
 		return nil, status.Error(codes.InvalidArgument, "Post Id must be specified")
 	}
 
-	correctAuthorId, err := sapi.repo.GetAuthorByPostId(ctx, request.GetPostId())
+	correctAuthorId, err := sapi.repo.GetAuthorIdByPostId(ctx, request.GetPostId())
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (sapi *serverAPI) GetPostById(ctx context.Context, request *post_v1.GetPost
 		return nil, status.Error(codes.InvalidArgument, "Post Id must be specified")
 	}
 
-	correctAuthorId, err := sapi.repo.GetAuthorByPostId(ctx, request.GetPostId())
+	correctAuthorId, err := sapi.repo.GetAuthorIdByPostId(ctx, request.GetPostId())
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func (sapi *serverAPI) GetListPosts(ctx context.Context, request *post_v1.GetLis
 		return nil, status.Error(codes.InvalidArgument, "Page Size must be specified")
 	}
 
-	res, err := sapi.repo.GetListPosts(ctx, int(request.GetPage()), int(request.GetPageSize()))
+	res, err := sapi.repo.GetListPosts(ctx, int(request.GetPage()), int(request.GetPageSize()), int(request.AuthorId))
 	if err != nil {
 		return nil, err
 	}
@@ -175,8 +175,8 @@ func (sapi *serverAPI) GetListPosts(ctx context.Context, request *post_v1.GetLis
 	postResponses := make([]*post_v1.PostResponse, len(res))
 	for i, post := range res {
 		postResponses[i] = &post_v1.PostResponse{
-			PostId:   post.ID,       // Ensure the ID type is compatible; convert if necessary
-			AuthorId: post.AuthorID, // Ensure the AuthorID type is compatible; convert if necessary
+			PostId:   post.ID,
+			AuthorId: post.AuthorID,
 			Title:    post.Title,
 			Content:  post.Content,
 		}

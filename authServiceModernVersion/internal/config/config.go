@@ -14,6 +14,12 @@ type Config struct {
 	Gin         GinConfig         `yaml:"gin"`
 	Storage     StorageConfig     `yaml:"storage"`
 	PostService PostServiceConfig `yaml:"post_service"`
+	JWT         JWTConfig         `yaml:"jwt"`
+}
+
+type JWTConfig struct {
+	TTL    uint32 `yaml:"ttl" env-default:"24"`
+	Secret string `yaml:"secret"`
 }
 
 type PostServiceConfig struct {

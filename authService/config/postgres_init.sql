@@ -1,3 +1,0 @@
-CREATE USER authinitializer WITH SUPERUSER PASSWORD 'qwerty123456';
-CREATE DATABASE auth_db;
-GRANT ALL PRIVILEGES ON DATABASE auth_db TO authinitializer;

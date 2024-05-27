@@ -2,25 +2,35 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
 
 	"github.com/Denterry/SocialNetwork/authServiceModernVersion/domain"
+	err "github.com/Denterry/SocialNetwork/authServiceModernVersion/error"
+	"github.com/Denterry/SocialNetwork/authServiceModernVersion/internal/config"
 	"github.com/Denterry/SocialNetwork/authServiceModernVersion/internal/repository"
 	"github.com/Denterry/SocialNetwork/authServiceModernVersion/model"
+	"github.com/Denterry/SocialNetwork/authServiceModernVersion/util"
+	"github.com/google/uuid"
 )
 
 type UserService interface {
 	Signup(request *model.SignupRequest) error
 	ChangeInfo(request *model.ChangeInfoRequest) error
-	Signin(request *model.SigninRequest) error
+	Signin(request *model.SigninRequest) (string, error)
+	Retrieve(request *model.RetrieveRequest) (*model.User, err.ServiceError)
+	CurrentUser(request *model.CurrentUserRequest) (*model.User, error)
 }
 
 type userService struct {
 	repository repository.UserRepository
+	cfg        *config.Config
 }
 
-func NewUserService(repository repository.UserRepository) UserService {
+func NewUserService(repository repository.UserRepository, cfg *config.Config) UserService {
 	return &userService{
 		repository: repository,
+		cfg:        cfg,
 	}
 }
 
@@ -62,17 +72,51 @@ func (service *userService) ChangeInfo(request *model.ChangeInfoRequest) error {
 	return nil
 }
 
-func (service *userService) Signin(request *model.SigninRequest) error {
+func (service *userService) Signin(request *model.SigninRequest) (string, error) {
 
 	exists := service.repository.ExistsByUsername(request.Username)
 	if !exists {
-		return errors.New("user with this username doesn't exist")
+		return "", errors.New("user with this username doesn't exist")
 	}
 
-	access := service.repository.PasswordCheck(request.Username, request.Password)
-	if !access {
-		return errors.New("wrong password")
+	id := service.repository.PasswordCheck(request.Username, request.Password)
+	if id == uuid.Nil {
+		return "", errors.New("wrong password") // bad practice for hacking
 	}
 
-	return nil
+	fmt.Println(fmt.Sprintf("id id id id: %d", id))
+
+	token, err := util.GenerateToken(id, service.cfg)
+
+	if err != nil {
+		return "", err
+	}
+
+	return token, nil
+}
+
+func (service *userService) Retrieve(request *model.RetrieveRequest) (*model.User, err.ServiceError) {
+	user := service.repository.Retrieve(request.Username, request.Password)
+	if user == nil {
+		return nil, err.NewServiceError(
+			"not.found",
+			"User not found.",
+			http.StatusNotFound,
+		)
+	}
+
+	return &model.User{Username: user.Username, Role: user.Role}, nil
+}
+
+func (service *userService) CurrentUser(request *model.CurrentUserRequest) (*model.User, error) {
+	user := service.repository.GetUserByID(request.UserID)
+	if user == nil {
+		return nil, err.NewServiceError(
+			"not.found",
+			"User not found.",
+			http.StatusNotFound,
+		)
+	}
+
+	return &model.User{Username: user.Username, Role: user.Role}, nil
 }

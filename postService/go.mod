@@ -1,6 +1,6 @@
 module github.com/Denterry/SocialNetwork/postService
 
-go 1.22.2
+go 1.22.3
 
 require github.com/ilyakaznacheev/cleanenv v1.5.0
 

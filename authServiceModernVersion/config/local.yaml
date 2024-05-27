@@ -15,3 +15,7 @@ storage:
 post_service:
   host: post_service
   port: 8081
+
+jwt:
+  ttl: 24
+  secret: secretkey

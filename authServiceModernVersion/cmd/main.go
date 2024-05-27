@@ -44,14 +44,14 @@ func main() {
 	log.Info("starting Authentication application", slog.Any("config", cfg))
 
 	userRepository := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepository)
+	userService := service.NewUserService(userRepository, cfg)
 
 	postServiceClient := service.NewPostServiceClient(fmt.Sprintf("%s:%s", cfg.PostService.Host, cfg.PostService.Port))
 
 	engine := gin.Default()
 
-	controller.NewUserController(engine, userService)
-	controller.NewPostController(engine, postServiceClient)
+	controller.NewUserController(engine, userService, cfg)
+	controller.NewPostController(engine, postServiceClient, cfg)
 
 	err = engine.Run(fmt.Sprintf("%s:%s", cfg.Gin.Host, cfg.Gin.Port))
 	if err != nil {

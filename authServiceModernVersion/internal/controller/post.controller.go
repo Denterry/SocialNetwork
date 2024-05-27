@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/Denterry/SocialNetwork/authServiceModernVersion/internal/config"
+	"github.com/Denterry/SocialNetwork/authServiceModernVersion/middleware"
 	"github.com/Denterry/SocialNetwork/postService/pkg/post_v1"
 	"github.com/gin-gonic/gin"
 )
@@ -18,20 +20,23 @@ type PostController interface {
 
 type postController struct {
 	CLient post_v1.PostServiceClient
+	Cfg    *config.Config
 }
 
-func NewPostController(engine *gin.Engine, client post_v1.PostServiceClient) {
+func NewPostController(engine *gin.Engine, client post_v1.PostServiceClient, cfg *config.Config) {
 	controller := &postController{
 		CLient: client,
+		Cfg:    cfg,
 	}
 
-	api := engine.Group("api")
+	api_protected := engine.Group("api/admin")
 	{
-		api.POST("posts", controller.CreatePost)
-		api.PUT("posts/:id", controller.UpdatePost)
-		api.DELETE("posts/:id", controller.DeletePost)
-		api.GET("posts/:id", controller.GetPost)
-		api.GET("posts", controller.GetListPosts)
+		api_protected.Use(middleware.JWTAuthMiddleware(cfg))
+		api_protected.POST("posts", controller.CreatePost)
+		api_protected.PUT("posts/:id", controller.UpdatePost)
+		api_protected.DELETE("posts/:id", controller.DeletePost)
+		api_protected.GET("posts/:id", controller.GetPost)
+		api_protected.GET("posts", controller.GetListPosts)
 	}
 }
 

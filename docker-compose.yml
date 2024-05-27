@@ -12,9 +12,10 @@ services:
     volumes:
       - auth-db-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5434:5432"
     healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:5432"]
+        # test: ["CMD", "curl", "-f", "http://localhost:5432"]
+        test: ["CMD", "pg_isready", "-U", "authiniter", "-d", "auth_db"]
         interval: 30s
         timeout: 10s
         retries: 5
@@ -33,7 +34,8 @@ services:
     ports:
       - "5433:5432"
     healthcheck:
-        test: ["CMD", "curl", "-f", "http://localhost:5432"]
+        # test: ["CMD", "curl", "-f", "http://localhost:5432"]
+        test: ["CMD", "pg_isready", "-U", "postiniter", "-d", "post_db"]
         interval: 30s
         timeout: 10s
         retries: 5
@@ -79,8 +81,10 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - auth-db-setup
-      - post-service
+      auth-db-setup:
+        condition: service_healthy
+      post-service:
+        condition: service_started
     environment:
       - DB_HOST=auth_database
       - DB_PORT=5432
