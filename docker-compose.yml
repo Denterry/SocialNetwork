@@ -1,0 +1,106 @@
+version: '3.8'
+services:
+  auth-db-setup:
+    image: postgres:latest
+    hostname: auth_database
+    container_name: auth-db-setup
+    restart: always
+    environment:
+      POSTGRES_USER: authiniter
+      POSTGRES_PASSWORD: qwerty123456
+      POSTGRES_DB: auth_db
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    healthcheck:
+        # test: ["CMD", "curl", "-f", "http://localhost:5432"]
+        test: ["CMD", "pg_isready", "-U", "authiniter", "-d", "auth_db"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+
+  post-db-setup:
+    image: postgres:latest
+    hostname: post_database
+    container_name: post-db-setup
+    restart: always
+    environment:
+      POSTGRES_USER: postiniter
+      POSTGRES_PASSWORD: qwerty123456
+      POSTGRES_DB: post_db
+    volumes:
+      - post-db-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+        # test: ["CMD", "curl", "-f", "http://localhost:5432"]
+        test: ["CMD", "pg_isready", "-U", "postiniter", "-d", "post_db"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+
+  post-db-migration:
+    image: migrate/migrate
+    container_name: post-db-migration
+    restart: on-failure
+    depends_on:
+      - post-db-setup
+    volumes:
+      - ./postService/migration:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "postgresql://postiniter:qwerty123456@post_database:5432/post_db?sslmode=disable", 
+      "-verbose", "up"
+    ]
+  
+  post-service:
+    hostname: post_service
+    restart: on-failure
+    build:
+      context: ./
+      dockerfile: ./postService/post.Dockerfile
+    ports:
+      - "50052:50052"
+      - "8081:8081"
+    depends_on:
+      - post-db-migration
+    environment:
+      - DB_HOST=post_database
+      - DB_PORT=5432
+      - DB_USER=postiniter
+      - DB_PASSWORD=qwerty123456
+      - DB_NAME=post_db
+  
+  auth-service:
+    hostname: auth_service
+    restart: on-failure
+    build:
+      context: ./
+      dockerfile: ./authServiceModernVersion/auth.Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      auth-db-setup:
+        condition: service_healthy
+      post-service:
+        condition: service_started
+    environment:
+      - DB_HOST=auth_database
+      - DB_PORT=5432
+      - DB_USER=authiniter
+      - DB_PASSWORD=qwerty123456
+      - DB_NAME=auth_db
+
+  # auth-migration:
+  #   image: migrate/migrate
+  #   depends_on:
+  #     - auth-db
+  #   volumes:
+  #     - ./authService/migration:/migrations
+  #   command: ["-path", "/migrations", "-database", "postgres://authuser:authpass@auth-db:5432/authdb?sslmode=disable", "up"]
+  #   restart: on-failure
+
+volumes:
+  auth-db-data:
+  post-db-data:
