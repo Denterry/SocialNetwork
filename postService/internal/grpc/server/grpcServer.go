@@ -134,15 +134,6 @@ func (sapi *serverAPI) GetPostById(ctx context.Context, request *post_v1.GetPost
 		return nil, status.Error(codes.InvalidArgument, "Post Id must be specified")
 	}
 
-	correctAuthorId, err := sapi.repo.GetAuthorIdByPostId(ctx, request.GetPostId())
-	if err != nil {
-		return nil, err
-	}
-
-	if request.GetAuthorId() != correctAuthorId {
-		return nil, fmt.Errorf("author id does not match the author of this post")
-	}
-
 	res, err := sapi.repo.GetPostById(ctx, request.GetPostId())
 	if err != nil {
 		return nil, err

@@ -85,7 +85,7 @@ func (pr *postRepositoryPg) GetPostById(ctx context.Context, postID int64) (*mod
 
 func (pr *postRepositoryPg) GetListPosts(ctx context.Context, pageNumber, pageSize, authorID int) ([]*models.Post, error) {
 	var posts []*models.Post
-	query := fmt.Sprintf("SELECT id, author_id, title, content FROM post WHERE author_id=%d LIMIT %d OFFSET %d", authorID, pageSize, (pageNumber-1)*pageSize)
+	query := fmt.Sprintf("SELECT id, author_id, title, content FROM post LIMIT %d OFFSET %d", pageSize, (pageNumber-1)*pageSize)
 	rows, err := pr.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err

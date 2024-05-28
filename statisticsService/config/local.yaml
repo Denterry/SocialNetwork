@@ -1,0 +1,17 @@
+env: local # dev, prod
+
+gin:
+  host: statistics_service
+  port: 8082
+
+storage:
+  user: default
+  password:
+  name: default
+  host: stats_database
+  port: 9000
+
+kafka:
+  address: "social-net-kafka:9092"
+  topic: post_events
+  consumer_port: 8888

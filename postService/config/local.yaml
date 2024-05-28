@@ -3,7 +3,7 @@ env: "local" # dev, prod
 token_ttl: 1h
 
 grpc:
-  host: "0.0.0.0"
+  host: post_service
   port: 8081
   timeout: 10h
 
