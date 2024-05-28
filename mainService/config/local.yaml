@@ -1,0 +1,25 @@
+env: local # dev, prod
+
+gin:
+  host: auth_service
+  port: 8080
+
+storage:
+  user: authiniter
+  password: qwerty123456
+  name: auth_db
+  host: auth_database
+  port: 5432
+  schema: public
+
+post_service:
+  host: post_service
+  port: 8081
+
+jwt:
+  ttl: 24
+  secret: secretkey
+
+kafka:
+  address: "social-net-kafka:9092"
+  producer_port: 8888

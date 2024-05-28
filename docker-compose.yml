@@ -1,0 +1,170 @@
+version: '3.8'
+services:
+  auth-db-setup:
+    image: postgres:latest
+    hostname: auth_database
+    container_name: auth-db-setup
+    restart: always
+    environment:
+      POSTGRES_USER: authiniter
+      POSTGRES_PASSWORD: qwerty123456
+      POSTGRES_DB: auth_db
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+    healthcheck:
+        # test: ["CMD", "curl", "-f", "http://localhost:5432"]
+        test: ["CMD", "pg_isready", "-U", "authiniter", "-d", "auth_db"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+    networks:
+      - social-net-network
+
+  post-db-setup:
+    image: postgres:latest
+    hostname: post_database
+    container_name: post-db-setup
+    restart: always
+    environment:
+      POSTGRES_USER: postiniter
+      POSTGRES_PASSWORD: qwerty123456
+      POSTGRES_DB: post_db
+    volumes:
+      - post-db-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+        # test: ["CMD", "curl", "-f", "http://localhost:5432"]
+        test: ["CMD", "pg_isready", "-U", "postiniter", "-d", "post_db"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+    networks:
+      - social-net-network
+
+  post-db-migration:
+    image: migrate/migrate
+    container_name: post-db-migration
+    restart: on-failure
+    depends_on:
+      - post-db-setup
+    volumes:
+      - ./postService/migration:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "postgresql://postiniter:qwerty123456@post_database:5432/post_db?sslmode=disable", 
+      "-verbose", "up"
+    ]
+    networks:
+      - social-net-network
+  
+  post-service:
+    hostname: post_service
+    restart: on-failure
+    build:
+      context: ./
+      dockerfile: ./postService/post.Dockerfile
+    ports:
+      - "50052:50052"
+      - "8081:8081"
+    depends_on:
+      - post-db-migration
+    environment:
+      - DB_HOST=post_database
+      - DB_PORT=5432
+      - DB_USER=postiniter
+      - DB_PASSWORD=qwerty123456
+      - DB_NAME=post_db
+    networks:
+      - social-net-network
+  
+  auth-service:
+    hostname: auth_service
+    restart: on-failure
+    build:
+      context: ./
+      dockerfile: ./mainService/auth.Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      auth-db-setup:
+        condition: service_healthy
+      post-service:
+        condition: service_started
+    environment:
+      - DB_HOST=auth_database
+      - DB_PORT=5432
+      - DB_USER=authiniter
+      - DB_PASSWORD=qwerty123456
+      - DB_NAME=auth_db
+    networks:
+      - social-net-network
+
+  stats-db-setup:
+    image: clickhouse/clickhouse-server
+    hostname: stats_database
+    restart: always
+    volumes:
+      - stats-db-data:/var/lib/clickhouse
+    ports:
+      - "9000:9000"
+      - "8123:8123"
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: wget --spider -q stats_database:8123/ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - social-net-network
+
+  stats-db-migration:
+    image: migrate/migrate
+    container_name: stats-db-migration
+    restart: on-failure
+    depends_on:
+      stats-db-setup:
+        condition: service_healthy
+    volumes:
+      - ./statisticsService/migration:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "clickhouse://default:@stats_database:9000/default",
+      "-verbose", "up"
+    ]
+    networks:
+      - social-net-network
+
+  statistics-service:
+    hostname: statistics_service
+    restart: on-failure
+    build:
+      context: ./
+      dockerfile: ./statisticsService/statistics.Dockerfile
+    depends_on:
+      - stats-db-setup
+      - stats-db-migration
+      # stats-db-setup:
+      #   condition: service_healthy
+      # stats-db-migration:
+      #   condition: service_completed_successfully
+    ports:
+      - "8082:8082"
+    networks:
+      - social-net-network
+
+volumes:
+  auth-db-data:
+  post-db-data:
+  stats-db-data:
+
+networks:
+  social-net-network:
+    name: "social-net-network"
+    driver: bridge

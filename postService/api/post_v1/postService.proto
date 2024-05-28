@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package post_v1;
+
+option go_package = "github.com/Denterry/SocialNetwork/postService/pkg/post_v1;post_v1";
+
+// The Post service provides operations on posts.
+service PostService {
+    // Creates a new post
+    rpc CreatePost(CreatePostRequest) returns (PostResponse);
+    // Updates an existing post
+    rpc UpdatePost(UpdatePostRequest) returns (PostResponse);
+    // Deletes a specific post
+    rpc DeletePost(DeletePostRequest) returns (PostResponse);
+    // Retrieves a specific post by ID
+    rpc GetPostById(GetPostByIdRequest) returns (PostResponse);
+    // Lists posts with pagination
+    rpc GetListPosts(GetListPostsRequest) returns (GetListPostsResponse);
+}
+
+message CreatePostRequest {
+    string title = 1;
+    string content = 2;
+    int64 authorId = 3;
+}
+
+message UpdatePostRequest {
+    int64 postId = 1;
+    string title = 2;
+    string content = 3;
+    int64 authorId = 4;
+}
+
+message DeletePostRequest {
+    int64 postId = 1;
+    int64 authorId = 2;
+}
+
+message GetPostByIdRequest {
+    int64 postId = 1;
+    int64 authorId = 2;
+}
+
+message GetListPostsRequest {
+    int32 page = 1;
+    int32 pageSize = 2;
+    int64 authorId = 3;
+}
+
+message PostResponse {
+    int64 postId = 1;
+    string title = 2;
+    string content = 3;
+    int64 authorId = 4;
+}
+
+message GetListPostsResponse {
+    repeated PostResponse posts = 1;
+    int32 nextPage = 2;
+}
