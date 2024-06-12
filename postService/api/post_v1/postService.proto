@@ -21,37 +21,37 @@ service PostService {
 message CreatePostRequest {
     string title = 1;
     string content = 2;
-    int64 authorId = 3;
+    string authorId = 3;
 }
 
 message UpdatePostRequest {
     int64 postId = 1;
     string title = 2;
     string content = 3;
-    int64 authorId = 4;
+    string authorId = 4;
 }
 
 message DeletePostRequest {
     int64 postId = 1;
-    int64 authorId = 2;
+    string authorId = 2;
 }
 
 message GetPostByIdRequest {
     int64 postId = 1;
-    int64 authorId = 2;
+    string authorId = 2;
 }
 
 message GetListPostsRequest {
     int32 page = 1;
     int32 pageSize = 2;
-    int64 authorId = 3;
+    string authorId = 3;
 }
 
 message PostResponse {
     int64 postId = 1;
     string title = 2;
     string content = 3;
-    int64 authorId = 4;
+    string authorId = 4;
 }
 
 message GetListPostsResponse {

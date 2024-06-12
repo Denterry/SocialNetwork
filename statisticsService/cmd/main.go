@@ -3,13 +3,20 @@ package main
 import (
 	"fmt"
 	"log/slog"
+	"net"
 	"os"
+	"sync"
 
 	"github.com/Denterry/SocialNetwork/statisticsService/internal/config"
 	"github.com/Denterry/SocialNetwork/statisticsService/internal/controller"
+	"github.com/Denterry/SocialNetwork/statisticsService/internal/grpc/server"
 	"github.com/Denterry/SocialNetwork/statisticsService/internal/kafka"
+	"github.com/Denterry/SocialNetwork/statisticsService/internal/repository"
+	"github.com/Denterry/SocialNetwork/statisticsService/internal/service"
 	"github.com/Denterry/SocialNetwork/statisticsService/internal/storage"
+	"github.com/Denterry/SocialNetwork/statisticsService/pkg/stat_v1"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc"
 )
 
 const (
@@ -34,9 +41,9 @@ func main() {
 	if err != nil {
 		log.Error("Failed to connect to ClickHouse: ", err)
 	}
-	_ = conn
 
-	fmt.Println("asdaskdlkaghsdhjglakfgahs hjasvf ashyf hjasvlhj")
+	var wg sync.WaitGroup
+	wg.Add(3)
 
 	// Kafka Action
 	kafkaConsumer, err := kafka.NewKafkaConsumer(cfg)
@@ -45,19 +52,50 @@ func main() {
 	}
 	log.Info("Successfully create new kafka consumer")
 
-	go kafkaConsumer.ConsumeEvents(conn)
+	go func() {
+		defer wg.Done()
+		kafkaConsumer.ConsumeEvents(conn)
+	}()
+
+	// gRPC Action
+	go func() {
+		defer wg.Done()
+		lis, err := net.Listen("tcp", fmt.Sprintf("%s:%s", cfg.GRPC.Host, cfg.GRPC.Port))
+		if err != nil {
+			log.Error("Failed to listen: %v", err)
+		}
+
+		postServiceClient := service.NewPostServiceClient(fmt.Sprintf("%s:%s", cfg.PostService.Host, cfg.PostService.Port))
+
+		grpcServer := grpc.NewServer()
+		repo := repository.NewStatRepositoryClickhouse(conn)
+		statService := server.NewServerAPI(repo, postServiceClient, cfg)
+
+		stat_v1.RegisterStatisticsServiceServer(grpcServer, statService)
+
+		log.Info(fmt.Sprintf("gRPC Server is running on %s:%s", cfg.GRPC.Host, cfg.GRPC.Port))
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Error("Failed to serve: %v", err)
+		}
+	}()
 
 	// API Action
-	engine := gin.Default()
+	go func() {
+		defer wg.Done()
+		engine := gin.Default()
 
-	controller.NewEventController(engine, cfg)
+		controller.NewEventController(engine, cfg)
 
-	err = engine.Run(fmt.Sprintf("%s:%s", cfg.Gin.Host, cfg.Gin.Port))
-	if err != nil {
-		log.Info(fmt.Sprintf("Server running is failed on %s:%s", cfg.Gin.Host, cfg.Gin.Port))
-	}
+		err = engine.Run(fmt.Sprintf("%s:%s", cfg.Gin.Host, cfg.Gin.Port))
 
-	log.Info(fmt.Sprintf("Server is running on %s:%s", cfg.Gin.Host, cfg.Gin.Port))
+		if err != nil {
+			log.Info(fmt.Sprintf("API Server running is failed on %s:%s", cfg.Gin.Host, cfg.Gin.Port))
+		}
+
+		log.Info(fmt.Sprintf("API Server is running on %s:%s", cfg.Gin.Host, cfg.Gin.Port))
+	}()
+
+	wg.Wait()
 }
 
 func setupLogger(env string) *slog.Logger {

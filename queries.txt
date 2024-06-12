@@ -1,0 +1,27 @@
+{
+    "username": "den@gmail.com",
+    "password": "asd123",
+    "password_confirmation": "asd123"   
+}
+
+{
+    "username": "den@gmail.com",
+    "name": "den",
+    "surname": "tod",
+    "birthday": "06.03.2004",
+    "email": "den@gmail.com",
+    "phone_number": "+12312312"
+}
+
+{
+    "title": "something awesome",
+    "content": "bla bla bla bla bla bla bla bla bla bla bla bla",
+    "authorId": 1
+}
+
+{
+    "postId": 1,
+    "title": "something awesome",
+    "content": "bla bla bla bla bla bla bla bla bla bla bla bla",
+    "authorId": 1
+}

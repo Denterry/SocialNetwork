@@ -4,16 +4,36 @@ import (
 	"flag"
 	"log"
 	"os"
+	"time"
 
 	"github.com/ilyakaznacheev/cleanenv"
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
-	Env     string        `yaml:"env" env-default:"local"`
-	Gin     GinConfig     `yaml:"gin"`
-	Storage StorageConfig `yaml:"storage"`
-	Kafka   KafkaConfig   `yaml:"kafka"`
+	Env         string            `yaml:"env" env-default:"local"`
+	Gin         GinConfig         `yaml:"gin"`
+	GRPC        GRPCConfig        `yaml:"grpc"`
+	Storage     StorageConfig     `yaml:"storage"`
+	Kafka       KafkaConfig       `yaml:"kafka"`
+	PostService PostServiceConfig `yaml:"post_service"`
+	MainService MainServiceConfig `yaml:"main_service"`
+}
+
+type MainServiceConfig struct {
+	Host string `yaml:"host" env-default:"auth_service"`
+	Port string `yaml:"port" env-default:"8080"`
+}
+
+type PostServiceConfig struct {
+	Host string `yaml:"host" env-default:"post_service"`
+	Port string `yaml:"port" env-default:"50052"`
+}
+
+type GRPCConfig struct {
+	Host    string        `yaml:"host" env-default:"0.0.0.0"`
+	Port    string        `yaml:"port" env-default:"50053"`
+	Timeout time.Duration `yaml:"timeout"`
 }
 
 type KafkaConfig struct {

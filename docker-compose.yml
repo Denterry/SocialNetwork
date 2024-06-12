@@ -150,12 +150,10 @@ services:
     depends_on:
       - stats-db-setup
       - stats-db-migration
-      # stats-db-setup:
-      #   condition: service_healthy
-      # stats-db-migration:
-      #   condition: service_completed_successfully
     ports:
+      - "50053:50053"
       - "8082:8082"
+      - "8083:8083"
     networks:
       - social-net-network
 

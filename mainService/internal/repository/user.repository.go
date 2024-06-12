@@ -3,7 +3,6 @@ package repository
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
 
 	"github.com/Denterry/SocialNetwork/mainService/domain"
 	"github.com/Denterry/SocialNetwork/mainService/util"
@@ -78,6 +77,5 @@ func (repository *userRepository) GetUserByID(uid uuid.UUID) *domain.User {
 		return nil
 	}
 	user.Password = "***************"
-	fmt.Println(user.ID, user.Email, user.Password)
 	return user
 }

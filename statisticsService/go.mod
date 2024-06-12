@@ -2,15 +2,16 @@ module github.com/Denterry/SocialNetwork/statisticsService
 
 go 1.22.3
 
-require github.com/gin-gonic/gin v1.10.0
+require (
+	github.com/ClickHouse/clickhouse-go/v2 v2.24.0
+	github.com/gin-gonic/gin v1.10.0
+	google.golang.org/grpc v1.64.0
+)
 
 require (
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/ClickHouse/ch-go v0.61.5 // indirect
-	github.com/ClickHouse/clickhouse-go v1.5.4 // indirect
-	github.com/ClickHouse/clickhouse-go/v2 v2.24.0 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
-	github.com/cloudflare/golz4 v0.0.0-20150217214814-ef862a3cdc58 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/eapache/go-resiliency v1.6.0 // indirect
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
@@ -36,10 +37,12 @@ require (
 	github.com/shopspring/decimal v1.4.0 // indirect
 	go.opentelemetry.io/otel v1.27.0 // indirect
 	go.opentelemetry.io/otel/trace v1.27.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240528184218-531527333157 // indirect
 	olympos.io/encoding/edn v0.0.0-20201019073823-d3554ca0b0a3 // indirect
 )
 
 require (
+	github.com/Denterry/SocialNetwork/postService v0.0.0-00010101000000-000000000000
 	github.com/IBM/sarama v1.43.2
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
@@ -67,6 +70,8 @@ require (
 	golang.org/x/net v0.25.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	golang.org/x/text v0.15.0 // indirect
-	google.golang.org/protobuf v1.34.1 // indirect
+	google.golang.org/protobuf v1.34.1
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/Denterry/SocialNetwork/postService => ../postService

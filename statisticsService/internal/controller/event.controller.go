@@ -24,6 +24,6 @@ func NewEventController(engine *gin.Engine, cfg *config.Config) {
 	}
 }
 
-func (controller *eventController) HealthCheck(ctx *gin.Context) {
+func (controller eventController) HealthCheck(ctx *gin.Context) {
 	ctx.JSON(200, gin.H{"message": "WE ARE ALIVE!!!!!"})
 }

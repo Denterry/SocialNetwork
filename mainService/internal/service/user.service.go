@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/Denterry/SocialNetwork/mainService/domain"
@@ -19,7 +18,8 @@ type UserService interface {
 	ChangeInfo(request *model.ChangeInfoRequest) error
 	Signin(request *model.SigninRequest) (string, error)
 	Retrieve(request *model.RetrieveRequest) (*model.User, err.ServiceError)
-	CurrentUser(request *model.CurrentUserRequest) (*model.User, error)
+	CurrentUser(request *model.UserIdRequest) (*model.User, err.ServiceError)
+	GetUserInfo(request *model.UserIdRequest) (*model.FullUser, err.ServiceError)
 }
 
 type userService struct {
@@ -84,8 +84,6 @@ func (service *userService) Signin(request *model.SigninRequest) (string, error)
 		return "", errors.New("wrong password") // bad practice for hacking
 	}
 
-	fmt.Println(fmt.Sprintf("id id id id: %d", id))
-
 	token, err := util.GenerateToken(id, service.cfg)
 
 	if err != nil {
@@ -108,7 +106,7 @@ func (service *userService) Retrieve(request *model.RetrieveRequest) (*model.Use
 	return &model.User{Username: user.Username, Role: user.Role}, nil
 }
 
-func (service *userService) CurrentUser(request *model.CurrentUserRequest) (*model.User, error) {
+func (service *userService) CurrentUser(request *model.UserIdRequest) (*model.User, err.ServiceError) {
 	user := service.repository.GetUserByID(request.UserID)
 	if user == nil {
 		return nil, err.NewServiceError(
@@ -119,4 +117,25 @@ func (service *userService) CurrentUser(request *model.CurrentUserRequest) (*mod
 	}
 
 	return &model.User{Username: user.Username, Role: user.Role}, nil
+}
+
+func (service *userService) GetUserInfo(request *model.UserIdRequest) (*model.FullUser, err.ServiceError) {
+	user := service.repository.GetUserByID(request.UserID)
+	if user == nil {
+		return nil, err.NewServiceError(
+			"not.found",
+			"User not found.",
+			http.StatusNotFound,
+		)
+	}
+
+	return &model.FullUser{
+		Username: user.Username,
+		Role:     user.Role,
+		Name:     user.Name,
+		Surname:  user.Surname,
+		Birthday: user.Birthday,
+		Email:    user.Email,
+		Phone:    user.Phone,
+	}, nil
 }

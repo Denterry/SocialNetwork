@@ -3,16 +3,10 @@ package storage
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/Denterry/SocialNetwork/postService/internal/domain/models"
-)
-
-var (
-	ErrPostExists   = errors.New("post already exists")
-	ErrPostNotFound = errors.New("post not found")
-	ErrAppNotFound  = errors.New("app not found")
+	"github.com/google/uuid"
 )
 
 type postRepositoryPg struct {
@@ -23,21 +17,26 @@ func NewPostRepositoryPg(db *sql.DB) *postRepositoryPg {
 	return &postRepositoryPg{db: db}
 }
 
-func (pr *postRepositoryPg) GetAuthorIdByPostId(ctx context.Context, postID int64) (int64, error) {
+func (pr *postRepositoryPg) GetAuthorIdByPostId(ctx context.Context, postID int64) (string, error) {
 	query := "SELECT author_id FROM post WHERE id=$1"
-	var authorID int64
+	var authorID uuid.UUID
 	err := pr.db.QueryRowContext(ctx, query, postID).Scan(&authorID)
 	if err != nil {
-		return -1, err
+		return "", err
 	}
 
-	return authorID, nil
+	return authorID.String(), nil
 }
 
 func (pr *postRepositoryPg) CreatePost(ctx context.Context, post models.Post) (*models.Post, error) {
+	uid, err := uuid.Parse(post.AuthorID) // Parse string to UUID
+	if err != nil {
+		return nil, err
+	}
+
 	query := "INSERT INTO post (author_id, title, content) VALUES ($1, $2, $3) RETURNING id"
 	var postID int64
-	err := pr.db.QueryRowContext(ctx, query, post.AuthorID, post.Title, post.Content).Scan(&postID)
+	err = pr.db.QueryRowContext(ctx, query, uid, post.Title, post.Content).Scan(&postID)
 	if err != nil {
 		return nil, err
 	}
@@ -73,17 +72,19 @@ func (pr *postRepositoryPg) DeletePost(ctx context.Context, postID int64) error 
 
 func (pr *postRepositoryPg) GetPostById(ctx context.Context, postID int64) (*models.Post, error) {
 	var post models.Post
+	var uid uuid.UUID
 	query := "SELECT author_id, title, content FROM post WHERE id=$1"
-	err := pr.db.QueryRowContext(ctx, query, postID).Scan(&post.AuthorID, &post.Title, &post.Content)
+	err := pr.db.QueryRowContext(ctx, query, postID).Scan(&uid, &post.Title, &post.Content)
 	if err != nil {
 		return nil, err
 	}
 
 	post.ID = postID
+	post.AuthorID = uid.String()
 	return &post, nil
 }
 
-func (pr *postRepositoryPg) GetListPosts(ctx context.Context, pageNumber, pageSize, authorID int) ([]*models.Post, error) {
+func (pr *postRepositoryPg) GetListPosts(ctx context.Context, pageNumber, pageSize int, authorID string) ([]*models.Post, error) {
 	var posts []*models.Post
 	query := fmt.Sprintf("SELECT id, author_id, title, content FROM post LIMIT %d OFFSET %d", pageSize, (pageNumber-1)*pageSize)
 	rows, err := pr.db.QueryContext(ctx, query)
@@ -94,9 +95,11 @@ func (pr *postRepositoryPg) GetListPosts(ctx context.Context, pageNumber, pageSi
 
 	for rows.Next() {
 		var post models.Post
-		if err := rows.Scan(&post.ID, &post.AuthorID, &post.Title, &post.Content); err != nil {
+		var uid uuid.UUID
+		if err := rows.Scan(&post.ID, &uid, &post.Title, &post.Content); err != nil {
 			return nil, err
 		}
+		post.AuthorID = uid.String()
 		posts = append(posts, &post)
 	}
 

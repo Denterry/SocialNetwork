@@ -14,8 +14,14 @@ type Config struct {
 	Gin         GinConfig         `yaml:"gin"`
 	Storage     StorageConfig     `yaml:"storage"`
 	PostService PostServiceConfig `yaml:"post_service"`
+	StatService StatServiceConfig `yaml:"stat_service"`
 	JWT         JWTConfig         `yaml:"jwt"`
 	Kafka       KafkaConfig       `yaml:"kafka"`
+}
+
+type StatServiceConfig struct {
+	Host string `yaml:"host" env-default:"statistics_service"`
+	Port string `yaml:"port" env-default:"50053"`
 }
 
 type KafkaConfig struct {
@@ -29,7 +35,7 @@ type JWTConfig struct {
 }
 
 type PostServiceConfig struct {
-	Host string `yaml:"host" env-default:"0.0.0.0"`
+	Host string `yaml:"host" env-default:"post_service"`
 	Port string `yaml:"port" env-default:"50052"`
 }
 

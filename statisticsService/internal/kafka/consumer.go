@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/ClickHouse/clickhouse-go/v2"
@@ -84,7 +85,16 @@ func (k *KafkaConsumer) processMessage(conn clickhouse.Conn, msg []byte) {
 		return
 	}
 
-	if err := batch.Append(event.PostID, event.UserID, event.Event, time.Now()); err != nil {
+	// Convert postID from string to int64 as it should be in Clickhouse DB
+	intEventPostID, err := strconv.ParseInt(event.PostID, 10, 64)
+	if err != nil {
+		log.Printf("Failed to convert postID to int64: %v", err)
+		return
+	}
+
+	log.Printf("exiting user id: %s", event.UserID)
+
+	if err := batch.Append(intEventPostID, event.UserID, event.Event, time.Now()); err != nil {
 		log.Printf("Failed to append into batch: %v", err)
 	}
 

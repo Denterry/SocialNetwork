@@ -16,8 +16,8 @@ type PostRepository interface {
 	UpdatePost(ctx context.Context, post models.Post) (*models.Post, error)
 	DeletePost(ctx context.Context, id int64) error
 	GetPostById(ctx context.Context, id int64) (*models.Post, error)
-	GetListPosts(ctx context.Context, page, pageSize, authorID int) ([]*models.Post, error)
-	GetAuthorIdByPostId(ctx context.Context, postID int64) (int64, error)
+	GetListPosts(ctx context.Context, page, pageSize int, authorID string) ([]*models.Post, error)
+	GetAuthorIdByPostId(ctx context.Context, postID int64) (string, error)
 }
 
 type serverAPI struct {
@@ -30,7 +30,7 @@ func NewServerAPI(repo PostRepository) *serverAPI {
 }
 
 func (sapi *serverAPI) CreatePost(ctx context.Context, request *post_v1.CreatePostRequest) (*post_v1.PostResponse, error) {
-	if request.GetAuthorId() == 0 {
+	if request.GetAuthorId() == "" {
 		return nil, status.Error(codes.InvalidArgument, "Author Id must be specified")
 	}
 
@@ -51,7 +51,7 @@ func (sapi *serverAPI) CreatePost(ctx context.Context, request *post_v1.CreatePo
 
 	res, err := sapi.repo.CreatePost(ctx, post)
 	if err != nil {
-		return nil, status.Error(codes.Internal, "internal error")
+		return nil, status.Error(codes.Internal, fmt.Sprintf("internal error: %v", err))
 	}
 
 	fmt.Print("The post was created successfully!")
@@ -157,7 +157,7 @@ func (sapi *serverAPI) GetListPosts(ctx context.Context, request *post_v1.GetLis
 		return nil, status.Error(codes.InvalidArgument, "Page Size must be specified")
 	}
 
-	res, err := sapi.repo.GetListPosts(ctx, int(request.GetPage()), int(request.GetPageSize()), int(request.AuthorId))
+	res, err := sapi.repo.GetListPosts(ctx, int(request.GetPage()), int(request.GetPageSize()), request.AuthorId)
 	if err != nil {
 		return nil, err
 	}

@@ -49,6 +49,8 @@ func main() {
 
 	postServiceClient := service.NewPostServiceClient(fmt.Sprintf("%s:%s", cfg.PostService.Host, cfg.PostService.Port))
 
+	statServiceClient := service.NewStatServiceClient(fmt.Sprintf("%s:%s", cfg.StatService.Host, cfg.StatService.Port))
+
 	// Kafka Action
 	kafkProducer, err := kafka.NewKafkaProducer(cfg)
 	if err != nil {
@@ -58,8 +60,8 @@ func main() {
 	// API Action
 	engine := gin.Default()
 
-	controller.NewUserController(engine, userService, cfg)
-	controller.NewPostController(engine, postServiceClient, cfg, kafkProducer)
+	controller.NewUserController(engine, userService, cfg, statServiceClient)
+	controller.NewPostController(engine, postServiceClient, cfg, kafkProducer, statServiceClient)
 
 	err = engine.Run(fmt.Sprintf("%s:%s", cfg.Gin.Host, cfg.Gin.Port))
 	if err != nil {

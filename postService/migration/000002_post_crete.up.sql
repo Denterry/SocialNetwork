@@ -1,6 +1,6 @@
 CREATE TABLE post (
     id SERIAL PRIMARY KEY,
-    author_id BIGINT NOT NULL,
+    author_id UUID NOT NULL,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS post_events (
-    postID String,
+    postID UInt32,
     userID String,
     event String,
     timestamp DateTime DEFAULT now()

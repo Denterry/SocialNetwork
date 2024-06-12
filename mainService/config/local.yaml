@@ -16,6 +16,10 @@ post_service:
   host: post_service
   port: 8081
 
+stat_service:
+  host: statistics_service
+  port: 8083
+
 jwt:
   ttl: 24
   secret: secretkey
