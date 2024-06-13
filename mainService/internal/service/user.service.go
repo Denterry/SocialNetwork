@@ -81,7 +81,7 @@ func (service *userService) Signin(request *model.SigninRequest) (string, error)
 
 	id := service.repository.PasswordCheck(request.Username, request.Password)
 	if id == uuid.Nil {
-		return "", errors.New("wrong password") // bad practice for hacking
+		return "", errors.New("wrong password") // bad practice
 	}
 
 	token, err := util.GenerateToken(id, service.cfg)

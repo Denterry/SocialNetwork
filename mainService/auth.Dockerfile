@@ -3,9 +3,11 @@ FROM golang:1.22-alpine AS builder
 RUN mkdir /app
 RUN mkdir /app/mainService
 RUN mkdir /app/postService
+RUN mkdir /app/statisticsService
 
 COPY mainService /app/mainService
 COPY postService /app/postService
+COPY statisticsService /app/statisticsService
 
 WORKDIR /app/mainService
 

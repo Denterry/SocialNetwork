@@ -34,6 +34,7 @@ func TokenValid(ctx *gin.Context, cfg *config.Config) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -53,8 +54,6 @@ func ExtractToken(ctx *gin.Context) string {
 func ExtractTokenID(ctx *gin.Context, cfg *config.Config) (uuid.UUID, error) {
 	tokenString := ExtractToken(ctx)
 
-	fmt.Println("here here here here")
-
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
@@ -65,8 +64,6 @@ func ExtractTokenID(ctx *gin.Context, cfg *config.Config) (uuid.UUID, error) {
 		return uuid.Nil, err
 	}
 
-	fmt.Println("here here here here")
-
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if ok && token.Valid {
 		userIDStr, ok := claims["user_id"].(string) // Extract as string
@@ -74,21 +71,13 @@ func ExtractTokenID(ctx *gin.Context, cfg *config.Config) (uuid.UUID, error) {
 			return uuid.Nil, fmt.Errorf("user_id is not a string")
 		}
 
-		fmt.Println("here here here here")
-
 		uid, err := uuid.Parse(userIDStr) // Parse string to UUID
 		if err != nil {
 			return uuid.Nil, fmt.Errorf("user_id is not a valid UUID: %v", err)
 		}
-
-		fmt.Println("here here here here")
 
 		return uid, nil
 	}
 
 	return uuid.Nil, fmt.Errorf("invalid token or claims")
 }
-
-// {
-//     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JpemVkIjp0cnVlLCJleHAiOjE3MTY4MjgyNTEsInVzZXJfaWQiOiJhM2E5ZjNmMy01ZDM0LTQ1NGQtOGIzNC1hMjRmYTFhZjdhZjAifQ.TFxeTz6L7gj8-3B0-VYasImftWUVO3Jt0AoPHM8zOvo"
-// }
