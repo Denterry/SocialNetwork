@@ -31,19 +31,18 @@ jobs:
 
     # Run specific unit test - mainService
     - name: Run tests for main service
-      run: go test mainService/pkg
+      run: go test ./mainService/pkg
       env:
         GOROOT: /opt/hostedtoolcache/go/1.22.3/x64
 
     # Run specific unit test - postService
     - name: Run tests for post service
-      run: go test postService/pkg
+      run: go test ./postService/pkg
       env:
         GOROOT: /opt/hostedtoolcache/go/1.22.3/x64
 
     # Run specific unit test - statisticsService
     - name: Run tests for statistics service
-      run: go test statisticsService/pkg
+      run: go test ./statisticsService/pkg
       env:
         GOROOT: /opt/hostedtoolcache/go/1.22.3/x64
-

@@ -1,0 +1,15 @@
+CREATE TABLE IF NOT EXISTS users (
+   id serial PRIMARY KEY,
+   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+   deleted_at TIMESTAMP,
+   username VARCHAR(100) UNIQUE NOT NULL,
+   password VARCHAR(100) NOT NULL,
+   role VARCHAR(100),
+   name VARCHAR(150),
+   surname VARCHAR(150),
+   birthday VARCHAR(10),
+   email VARCHAR(300) UNIQUE,
+   phone VARCHAR(20) UNIQUE,
+    CHECK ( role IN ('USER', 'ADMIN') )
+);

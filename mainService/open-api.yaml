@@ -1,0 +1,421 @@
+openapi: 3.0.0
+info:
+  title: User Authentication API (Gateway API, Proxy API)
+  description: API for user registration, updating, authentication and subsequent transfer rest end-points for different services
+  version: 2.0.0
+servers:
+  - url: "http://localhost:8080"
+paths:
+  /api/users/sign-up:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/model/SignupRequest'
+      responses:
+        '200':
+          description: User registered successfully
+        '400':
+          description: Validation failed
+        '406':
+          description: Not acceptable
+        '500':
+          description: Internal server error
+
+  /api/users/sign-in:
+    post:
+      summary: Log in a user via username and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/model/SigninRequest'
+      responses:
+        '200':
+          description: User authenticated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        '400':
+          description: Validation failed
+        '406':
+          description: Not acceptable
+        '500':
+          description: Internal server error
+
+  /api/admin/user:
+    get:
+      summary: Get current user details
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CurrentUserRequest'
+      responses:
+        '200':
+          description: Current user details retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  data:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Validation failed
+        '500':
+          description: Internal server error
+
+  /api/admin/change-info:
+    put:
+      summary: Update an existing user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeInfoRequest'
+      responses:
+        '200':
+          description: User updated successfully
+        '400':
+          description: Validation failed
+        '406':
+          description: Not acceptable
+        '500':
+          description: Internal server error
+
+  /api/admin/posts:
+    post:
+      summary: Create a new post
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePostRequest'
+      responses:
+        '201':
+          description: Post created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Validation failed
+        '406':
+          description: Not acceptable
+        '500':
+          description: Internal server error
+
+  /api/admin/posts/{id}:
+    put:
+      summary: Update a post
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the post to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePostRequest'
+      responses:
+        '200':
+          description: Post updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Validation failed
+        '406':
+          description: Not acceptable
+        '500':
+          description: Internal server error
+
+    delete:
+      summary: Delete a post
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the post to delete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeletePostRequest'
+      responses:
+        '200':
+          description: Post deleted successfully
+        '400':
+          description: Validation failed
+        '406':
+          description: Not acceptable
+        '500':
+          description: Internal server error
+
+    get:
+      summary: Get a post by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the post to retrieve
+      responses:
+        '200':
+          description: Post retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '400':
+          description: Validation failed
+        '406':
+          description: Not acceptable
+        '500':
+          description: Internal server error
+
+  /api/admin/posts:
+    get:
+      summary: Get a list of posts
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: pageNumber
+          required: true
+          schema:
+            type: integer
+          description: The page number to retrieve
+        - in: query
+          name: pageSize
+          required: true
+          schema:
+            type: integer
+          description: The number of posts per page
+        - in: query
+          name: authorID
+          required: false
+          schema:
+            type: integer
+          description: The ID of the author to filter posts by
+      responses:
+        '200':
+          description: List of posts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+        '400':
+          description: Validation failed
+        '406':
+          description: Not acceptable
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+    User:
+      type: object
+      required:
+        - name
+        - surname
+        - birthday
+        - email
+        - phone
+      properties:
+        name:
+          type: string
+          description: The first name of the user
+        surname:
+          type: string
+          description: The last name of the user
+        birthday:
+          type: string
+          format: date
+          description: The birthday of the user
+        email:
+          type: string
+          format: email
+          description: The email address of the user
+        phone:
+          type: string
+          description: The phone number of the user
+    SignupRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: The username of the user
+        password:
+          type: string
+          description: The password of the user
+    SigninRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: The username of the user
+        password:
+          type: string
+          description: The password of the user
+    ChangeInfoRequest:
+      type: object
+      required:
+        - name
+        - surname
+        - birthday
+        - email
+        - phone
+      properties:
+        name:
+          type: string
+          description: The name of the user
+        surname:
+          type: string
+          description: The surname of the user
+        birthday:
+          type: string
+          format: date
+          description: The birthday date of the user
+        email:
+          type: string
+          description: The email of the user
+        phone:
+          type: string
+          description: The phone number of the user
+    CurrentUserRequest:
+      type: object
+      required:
+        - userid
+      properties:
+        userid:
+          type: uuid.UUID
+          description: user identification number
+    Post:
+      type: object
+      required:
+        - title
+        - content
+        - authorID
+      properties:
+        id:
+          type: integer
+          description: The ID of the post
+        title:
+          type: string
+          description: The title of the post
+        content:
+          type: string
+          description: The content of the post
+        authorID:
+          type: integer
+          description: The ID of the author of the post
+    CreatePostRequest:
+      type: object
+      required:
+        - title
+        - content
+        - authorID
+      properties:
+        title:
+          type: string
+          description: The title of the post
+        content:
+          type: string
+          description: The content of the post
+        authorID:
+          type: integer
+          description: The ID of the author of the post
+    UpdatePostRequest:
+      type: object
+      required:
+        - id
+        - title
+        - content
+      properties:
+        id:
+          type: integer
+          description: The ID of the post to update
+        title:
+          type: string
+          description: The title of the post
+        content:
+          type: string
+          description: The content of the post
+    DeletePostRequest:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          description: The ID of the post to delete
+    GetPostByIdRequest:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          description: The ID of the post to retrieve
+    GetListPostsRequest:
+      type: object
+      required:
+        - pageNumber
+        - pageSize
+      properties:
+        pageNumber:
+          type: integer
+          description: The page number to retrieve
+        pageSize:
+          type: integer
+          description: The number of posts per page
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

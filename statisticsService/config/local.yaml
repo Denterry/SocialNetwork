@@ -1,0 +1,31 @@
+env: "local" # dev, prod
+
+gin:
+  host: statistics_service
+  port: 8082
+
+grpc:
+  host: statistics_service
+  port: 8083
+  timeout: 10h
+
+storage:
+  user: default
+  password:
+  name: default
+  host: stats_database
+  port: 9000
+
+kafka:
+  address: "social-net-kafka:9092"
+  topic: post_events
+  consumer_port: 8888
+
+post_service:
+  host: post_service
+  port: 8081
+
+main_service:
+  host: auth_service
+  port: 8080
+  url: "http://auth_service:8080"

@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package stat_v1;
+
+option go_package = "github.com/Denterry/SocialNetwork/statisticsService/pkg/stat_v1;stat_v1";
+
+// The Statistics service provides operations on statistics about posts
+service StatisticsService {
+    // Returns the total number of views and likes for a specific post
+    rpc TotalViewsLikes(TotalViewsLikesRequest) returns (TotalViewsLikesResponse);
+    // Returns the top N posts by number of likes or views
+    rpc TopNPosts(TopNPostsRequest) returns (TopNPostsResponse);
+    // Returns the top N users with the most likes across all their posts.
+    rpc TopNUsers(TopNUsersRequest) returns (TopNUsersResponse);
+}
+
+message TotalViewsLikesRequest {
+    int64 postId = 1;
+}
+
+message TotalViewsLikesResponse {
+    int64 postId = 1;
+    uint64 totalViews = 2;
+    uint64 totalLikes = 3;
+}
+
+message TopNPostsRequest {
+    int64 n = 1;
+    string event = 2;
+}
+
+// General case since likes and vies are both numbers
+message TopNPosts {
+    uint32 postId = 1;
+    string userId = 2;
+    string username = 3;
+    uint64 number = 4; // number of likes or views, whatever
+}
+
+message TopNPostsResponse {
+    repeated TopNPosts topNPosts = 1;
+}
+
+message TopNUsersRequest {
+    int64 n = 1;
+}
+
+// Users can be measured only by likes without views
+message TopNUsers {
+    string username = 1;
+    uint64 number = 2; // number of likes
+}
+
+message TopNUsersResponse {
+    repeated TopNUsers topNUsers = 1;
+}

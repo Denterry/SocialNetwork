@@ -1,0 +1,16 @@
+env: "local" # dev, prod
+
+token_ttl: 1h
+
+grpc:
+  host: post_service
+  port: 8081
+  timeout: 10h
+
+storage:
+  user: postiniter
+  password: qwerty123456
+  name: post_db
+  host: post_database
+  port: 5432
+  schema: public
