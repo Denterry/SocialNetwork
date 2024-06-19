@@ -10,6 +10,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+//go:generate mockgen -source=grpcServer.go -destination=mocks/mock.go
+
 // PostRepository provides an interface for CRUD operations on posts/tasks
 type PostRepository interface {
 	CreatePost(ctx context.Context, post models.Post) (*models.Post, error)

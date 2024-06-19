@@ -1,0 +1,146 @@
+version: '3'
+
+services:
+  kafka:
+    container_name: "social-net-kafka"
+    image: confluentinc/cp-kafka:7.6.0
+    hostname: social-net-kafka
+    restart: unless-stopped
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://social-net-kafka:29092,PLAINTEXT_HOST://social-net-kafka:9092'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@social-net-kafka:29093'
+      KAFKA_LISTENERS: 'PLAINTEXT://social-net-kafka:29092,CONTROLLER://social-net-kafka:29093,PLAINTEXT_HOST://social-net-kafka:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_JMX_PORT: 9997
+    ports:
+      - "9092:9092"
+    networks:
+      - social-net-network
+
+  init-kafka:
+    container_name: "social-net-init-kafka"
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - kafka
+    entrypoint: ["/bin/sh", "-c"]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server social-net-kafka:29092 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server social-net-kafka:29092 --create --if-not-exists --topic post_events --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server social-net-kafka:29092 --list
+      "
+    networks:
+      - social-net-network
+
+  stats-db-setup:
+    image: clickhouse/clickhouse-server
+    hostname: stats_database
+    restart: always
+    volumes:
+      - stats-db-data:/var/lib/clickhouse
+    ports:
+      - "9000:9000"
+      - "8123:8123"
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 262144
+        hard: 262144
+    healthcheck:
+      test: wget --spider -q stats_database:8123/ping
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - social-net-network
+
+  stats-db-migration:
+    image: migrate/migrate
+    container_name: stats-db-migration
+    restart: on-failure
+    depends_on:
+      stats-db-setup:
+        condition: service_healthy
+    volumes:
+      - ./statisticsService/migration:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "clickhouse://default:@stats_database:9000/default",
+      "-verbose", "up"
+    ]
+    networks:
+      - social-net-network
+
+  post-db-setup:
+    image: postgres:latest
+    hostname: post_database
+    container_name: post-db-setup
+    restart: always
+    environment:
+      POSTGRES_USER: postiniter
+      POSTGRES_PASSWORD: qwerty123456
+      POSTGRES_DB: post_db
+    volumes:
+      - post-db-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+        test: ["CMD", "pg_isready", "-U", "postiniter", "-d", "post_db"]
+        interval: 5s
+        timeout: 5s
+        retries: 5
+    networks:
+      - social-net-network
+
+  post-service:
+    hostname: post_service
+    restart: on-failure
+    build:
+      context: ./
+      dockerfile: ./postService/post.Dockerfile
+    ports:
+      - "8081:8081"
+    depends_on:
+      post-db-setup:
+        condition: service_healthy
+    environment:
+      - DB_HOST=post_database
+      - DB_PORT=5432
+      - DB_USER=postiniter
+      - DB_PASSWORD=qwerty123456
+      - DB_NAME=post_db
+    networks:
+      - social-net-network
+
+  statistics-service:
+    hostname: statistics_service
+    restart: on-failure
+    build:
+      context: ./
+      dockerfile: ./statisticsService/statistics.Dockerfile
+    ports:
+      - "8083:8083"
+    depends_on:
+      - stats-db-setup
+      - stats-db-migration
+    networks:
+      - social-net-network
+
+volumes:
+  stats-db-data:
+  post-db-data:
+
+networks:
+  social-net-network:
+    name: "social-net-network"

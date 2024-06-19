@@ -26,7 +26,7 @@ type PostEvent struct {
 func NewKafkaConsumer(cfg *config.Config) (*KafkaConsumer, error) {
 	client := &KafkaConsumer{Cfg: cfg}
 
-	consumer, err := client.initConsumer()
+	consumer, err := client.InitConsumer()
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ func NewKafkaConsumer(cfg *config.Config) (*KafkaConsumer, error) {
 	return client, nil
 }
 
-func (k *KafkaConsumer) initConsumer() (sarama.Consumer, error) {
+func (k *KafkaConsumer) InitConsumer() (sarama.Consumer, error) {
 	config := sarama.NewConfig()
 	config.Consumer.Return.Errors = true
 

@@ -28,3 +28,4 @@ post_service:
 main_service:
   host: auth_service
   port: 8080
+  url: "http://auth_service:8080"

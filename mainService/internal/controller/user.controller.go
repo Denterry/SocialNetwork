@@ -30,7 +30,7 @@ type userController struct {
 	statisticsService stat_v1.StatisticsServiceClient
 }
 
-func NewUserController(engine *gin.Engine, userService service.UserService, cfg *config.Config, statisticsService stat_v1.StatisticsServiceClient) {
+func NewUserController(engine *gin.Engine, userService service.UserService, cfg *config.Config, statisticsService stat_v1.StatisticsServiceClient) *userController {
 	controller := &userController{
 		service:           userService,
 		cfg:               cfg,
@@ -52,6 +52,8 @@ func NewUserController(engine *gin.Engine, userService service.UserService, cfg 
 		api_protected.PUT("change-info", controller.ChangeInfo)
 		api_protected.GET("top", controller.GetUserTop)
 	}
+
+	return controller
 }
 
 func (controller userController) GetUserTop(ctx *gin.Context) {
@@ -91,7 +93,7 @@ func (controller userController) Signup(ctx *gin.Context) {
 
 	err := controller.service.Signup(request)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
 		})
 		return
@@ -112,7 +114,7 @@ func (controller userController) ChangeInfo(ctx *gin.Context) {
 
 	err := controller.service.ChangeInfo(request)
 	if err != nil {
-		ctx.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{
+		ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 			"message": err.Error(),
 		})
 		return

@@ -16,7 +16,6 @@ COPY ./postService/ .
 
 RUN go build -o post-service ./cmd/main.go
 
-EXPOSE 50052
 EXPOSE 8081
 
 CMD ["./post-service"]

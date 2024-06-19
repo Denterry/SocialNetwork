@@ -16,12 +16,8 @@ RUN go mod download && go mod verify
 
 COPY ./statisticsService/ .
 
-# COPY ./statisticsService/wait-for-it.sh /usr/local/bin/wait-for-it.sh
-# RUN chmod +x /usr/local/bin/wait-for-it.sh
-
 RUN go build -o statistics-service ./cmd/main.go
 
-EXPOSE 50053
-EXPOSE 8082
+EXPOSE 8083
 
 CMD ["./statistics-service"]

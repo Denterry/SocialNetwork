@@ -10,8 +10,11 @@ import (
 	"github.com/Denterry/SocialNetwork/mainService/internal/repository"
 	"github.com/Denterry/SocialNetwork/mainService/model"
 	"github.com/Denterry/SocialNetwork/mainService/util"
+	_ "github.com/golang/mock/mockgen/model"
 	"github.com/google/uuid"
 )
+
+//go:generate mockgen -source=user.service.go -destination=mocks/mock.go
 
 type UserService interface {
 	Signup(request *model.SignupRequest) error

@@ -23,6 +23,7 @@ type Config struct {
 type MainServiceConfig struct {
 	Host string `yaml:"host" env-default:"auth_service"`
 	Port string `yaml:"port" env-default:"8080"`
+	URL  string `yaml:"url" env-default:"http://auth_service:8080"`
 }
 
 type PostServiceConfig struct {
@@ -32,7 +33,7 @@ type PostServiceConfig struct {
 
 type GRPCConfig struct {
 	Host    string        `yaml:"host" env-default:"0.0.0.0"`
-	Port    string        `yaml:"port" env-default:"50053"`
+	Port    string        `yaml:"port" env-default:"8083"`
 	Timeout time.Duration `yaml:"timeout"`
 }
 

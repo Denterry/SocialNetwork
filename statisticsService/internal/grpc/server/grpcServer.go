@@ -15,6 +15,8 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+//go:generate mockgen -source=grpcServer.go -destination=mocks/mock.go
+
 // StatRepository provides an interface for CRUD operations on statistics information in Clickhouse
 type StatRepository interface {
 	GetLikesViewsOnPost(context.Context, int64) (uint64, uint64, error)

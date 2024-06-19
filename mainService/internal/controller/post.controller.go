@@ -112,7 +112,7 @@ func (controller postController) GetStatPost(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, res)
+	ctx.JSON(http.StatusOK, res)
 }
 
 func (controller postController) LikePost(ctx *gin.Context) {

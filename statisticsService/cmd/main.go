@@ -42,6 +42,21 @@ func main() {
 		log.Error("Failed to connect to ClickHouse: ", err)
 	}
 
+	// 	migrationUp := `
+	// 	-- Insert test events
+	// 	INSERT INTO post_events (postID, userID, event) VALUES
+	// 		(1, '6e3fd317-05f2-4e5c-bcf0-b270119e3fea', 'like'),
+	// 		(1, '6e3fd317-05f2-4e5c-bcf0-b270119e3fea', 'view');
+	// `
+	// 	// Execute migration
+	// 	err = conn.Exec(context.Background(), migrationUp)
+	// 	if err != nil {
+	// 		log.Error("Failed to execute migration: ", err)
+	// 		return
+	// 	}
+
+	// 	log.Info("Migration applied successfully!")
+
 	var wg sync.WaitGroup
 	wg.Add(3)
 
